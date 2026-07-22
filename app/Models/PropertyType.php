@@ -4,8 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Church extends Model
+class PropertyType extends Model
 {
-    public function district() { return $this->belongsTo(District::class); }
     public function properties() { return $this->hasMany(Property::class); }
 }
