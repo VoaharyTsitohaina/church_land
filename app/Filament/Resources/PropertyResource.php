@@ -13,6 +13,8 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+use Illuminate\Support\Facades\Auth;
+use Dotswan\MapPicker\Fields\Map;
 
 class PropertyResource extends Resource
 {
@@ -92,6 +94,17 @@ class PropertyResource extends Resource
                     ->collection('photos')
                     ->multiple()
                     ->image(),
+                Map::make('location')
+                    ->label('Location')
+                    ->defaultLocation(latitude: -18.8792, longitude: 47.5079)
+                    ->showMarker(true)
+                    ->clickable(true)
+                    ->zoom(12)
+                    ->afterStateUpdated(function (callable $set, $state) {
+                        $set('latitude', $state['lat']);
+                        $set('longitude', $state['lng']);
+                    })
+                    ->live(),
             ]);
     }
 
@@ -184,4 +197,25 @@ class PropertyResource extends Resource
             'edit' => Pages\EditProperty::route('/{record}/edit'),
         ];
     }
+
+ public static function getEloquentQuery(): Builder
+{
+    $query = parent::getEloquentQuery();
+    
+    // Utilisation de la façade Auth pour récupérer l'utilisateur connecté
+    $user = Auth::user();
+    /** @var \App\Models\User $user */
+    if (! $user) {
+        return $query;
+    }
+
+    if ($user->hasRole('district_manager')) {
+        $query->whereHas('church', fn ($q) => $q->where('district_id', $user->district_id));
+    } elseif ($user->hasRole('federation_admin')) {
+        $query->whereHas('church.district', fn ($q) => $q->where('federation_id', $user->federation_id));
+    }
+
+    return $query;
+}
+
 }
