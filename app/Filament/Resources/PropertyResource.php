@@ -7,6 +7,7 @@ use App\Filament\Resources\PropertyResource\RelationManagers;
 use App\Models\Property;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -99,10 +100,15 @@ class PropertyResource extends Resource
                     ->defaultLocation(latitude: -18.8792, longitude: 47.5079)
                     ->showMarker(true)
                     ->clickable(true)
-                    ->zoom(12)
+                    ->zoom(15)
                     ->afterStateUpdated(function (callable $set, $state) {
                         $set('latitude', $state['lat']);
                         $set('longitude', $state['lng']);
+                    })
+                    ->afterStateHydrated(function ($state, $record, Set $set): void {
+                        if ($record && $record->latitude && $record->longitude) {
+                            $set('location', ['lat' => $record->latitude, 'lng' => $record->longitude]);
+                        }
                     })
                     ->live(),
             ]);
