@@ -91,10 +91,17 @@ class PropertyResource extends Resource
                     ->default(null),
                 SpatieMediaLibraryFileUpload::make('titre_foncier')
                     ->collection('titre_foncier'),
+                SpatieMediaLibraryFileUpload::make('plan')
+                    ->collection('plan'),
+                SpatieMediaLibraryFileUpload::make('acte')
+                    ->collection('acte'),
                 SpatieMediaLibraryFileUpload::make('photos')
                     ->collection('photos')
                     ->multiple()
                     ->image(),
+                SpatieMediaLibraryFileUpload::make('autres')
+                    ->collection('autres')
+                    ->multiple(),
                 Map::make('location')
                     ->label('Location')
                     ->defaultLocation(latitude: -18.8792, longitude: 47.5079)
