@@ -15,9 +15,9 @@ class Property extends Model implements HasMedia
   'land_title_number','cadastral_number','legal_status','acquisition_mode',
   'acquisition_date','estimated_value','current_use','observations','history','created_by'];
 
-public function church() { return $this->belongsTo(Church::class); }
-public function type() { return $this->belongsTo(PropertyType::class, 'property_type_id'); }
-#[Override]
+  public function church() { return $this->belongsTo(Church::class); }
+  public function type() { return $this->belongsTo(PropertyType::class, 'property_type_id'); }
+  #[Override]
 	public function registerMediaCollections(): void
   {
     $this->addMediaCollection('titre_foncier')->singleFile();

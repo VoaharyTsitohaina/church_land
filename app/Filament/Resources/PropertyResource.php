@@ -87,8 +87,9 @@ class PropertyResource extends Resource
                 Forms\Components\Textarea::make('history')
                     ->columnSpanFull(),
                 Forms\Components\TextInput::make('created_by')
-                    ->numeric()
-                    ->default(null),
+                    ->default(fn () => Auth::id())
+                    ->disabled()
+                    ->dehydrated(),
                 SpatieMediaLibraryFileUpload::make('titre_foncier')
                     ->collection('titre_foncier'),
                 SpatieMediaLibraryFileUpload::make('plan')
