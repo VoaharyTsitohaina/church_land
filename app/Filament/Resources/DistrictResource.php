@@ -26,9 +26,12 @@ class DistrictResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('federation_id')
-                    ->required()
-                    ->numeric(),
+                Forms\Components\Select::make('federation_id')
+                    ->label('Federation')
+                    ->relationship('federation', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->required(),
             ]);
     }
 
@@ -38,8 +41,9 @@ class DistrictResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('federation_id')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('federation.name')
+                    ->label('Federation')
+                    ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

@@ -26,9 +26,12 @@ class ChurchResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('district_id')
-                    ->required()
-                    ->numeric(),
+                Forms\Components\Select::make('district_id')
+                    ->label('District')
+                    ->relationship('district', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->required(),
             ]);
     }
 
@@ -38,8 +41,9 @@ class ChurchResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('district_id')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('district.name')
+                    ->label('District')
+                    ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

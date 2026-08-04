@@ -33,12 +33,18 @@ class PropertyResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('property_type_id')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('church_id')
-                    ->required()
-                    ->numeric(),
+                Forms\Components\Select::make('property_type_id')
+                    ->label('Property Type')
+                    ->relationship('type', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->required(),
+                Forms\Components\Select::make('church_id')
+                    ->label('Church')
+                    ->relationship('church', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->required(),
                 Forms\Components\TextInput::make('region')
                     ->maxLength(255)
                     ->default(null),
@@ -87,9 +93,9 @@ class PropertyResource extends Resource
                 Forms\Components\Textarea::make('history')
                     ->columnSpanFull(),
                 Forms\Components\TextInput::make('created_by')
-                    ->default(fn () => Auth::id())
+                    ->default(fn () => Auth::user()->name)
                     ->disabled()
-                    ->dehydrated(),
+                    ->dehydrated(false),
                 SpatieMediaLibraryFileUpload::make('titre_foncier')
                     ->collection('titre_foncier'),
                 SpatieMediaLibraryFileUpload::make('plan')
@@ -130,11 +136,11 @@ class PropertyResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('property_type_id')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('type.name')
+                    ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('church_id')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('church.name')
+                    ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('region')
                     ->searchable(),
@@ -171,8 +177,8 @@ class PropertyResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('current_value')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('created_by')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('creator.name')
+                    ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -184,7 +190,10 @@ class PropertyResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('church_id')->relationship('church', 'name'),
+                Tables\Filters\SelectFilter::make('property_type_id')->relationship('type', 'name'),
+                Tables\Filters\Filter::make('sans_titre')
+                ->query(fn ($query) => $query->whereNull('land_title_number')),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -219,10 +228,7 @@ class PropertyResource extends Resource
     // Utilisation de la façade Auth pour récupérer l'utilisateur connecté
     $user = Auth::user();
     /** @var \App\Models\User $user */
-    if (! $user) {
-        return $query;
-    }
-
+    
     if ($user->hasRole('district_manager')) {
         $query->whereHas('church', fn ($q) => $q->where('district_id', $user->district_id));
     } elseif ($user->hasRole('federation_admin')) {

@@ -17,6 +17,7 @@ class Property extends Model implements HasMedia
 
   public function church() { return $this->belongsTo(Church::class); }
   public function type() { return $this->belongsTo(PropertyType::class, 'property_type_id'); }
+  public function creator() { return $this->belongsTo(User::class, 'created_by'); }
   #[Override]
 	public function registerMediaCollections(): void
   {
