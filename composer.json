@@ -7,6 +7,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "barryvdh/laravel-dompdf": "^3.1",
         "bezhansalleh/filament-shield": "^3.9",
         "dotswan/filament-map-picker": "^1.8",
         "filament/filament": "^3.2",
@@ -14,6 +15,7 @@
         "filament/support": "^3.2",
         "laravel/framework": "^11.0",
         "laravel/tinker": "^2.10.1",
+        "maatwebsite/excel": "^3.1",
         "spatie/laravel-medialibrary": "^11.23"
     },
     "require-dev": {
@@ -81,6 +83,9 @@
         }
     },
     "config": {
+        "platform": {
+        "php": "8.3.32"
+        },
         "optimize-autoloader": true,
         "preferred-install": "dist",
         "sort-packages": true,
