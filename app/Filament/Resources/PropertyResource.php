@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Illuminate\Support\Facades\Auth;
 use Dotswan\MapPicker\Fields\Map;
+use App\Exports\ArrayExport;
 
 class PropertyResource extends Resource
 {
@@ -97,17 +98,24 @@ class PropertyResource extends Resource
                     ->disabled()
                     ->dehydrated(false),
                 SpatieMediaLibraryFileUpload::make('titre_foncier')
-                    ->collection('titre_foncier'),
+                    ->collection('titre_foncier')
+                    ->openable(true),
                 SpatieMediaLibraryFileUpload::make('plan')
+                    ->openable(true)
                     ->collection('plan'),
                 SpatieMediaLibraryFileUpload::make('acte')
-                    ->collection('acte'),
+                    ->collection('acte')
+                    ->openable(true),
                 SpatieMediaLibraryFileUpload::make('photos')
                     ->collection('photos')
                     ->multiple()
+                    ->panelLayout('grid')
+                    ->openable(true)
+                    ->responsiveImages()
                     ->image(),
                 SpatieMediaLibraryFileUpload::make('autres')
                     ->collection('autres')
+                    ->openable(true)
                     ->multiple(),
                 Map::make('location')
                     ->label('Location')
@@ -225,7 +233,6 @@ class PropertyResource extends Resource
 {
     $query = parent::getEloquentQuery();
     
-    // Utilisation de la façade Auth pour récupérer l'utilisateur connecté
     $user = Auth::user();
     /** @var \App\Models\User $user */
     
