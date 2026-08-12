@@ -135,6 +135,7 @@ class Reports extends Page
             'totalPropertiesWithoutTitle' => (clone $this->baseQuery())->whereNull('land_title_number')->count(),
             'totalPropertiesWithoutDocuments' => (clone $this->baseQuery())->whereDoesntHave('media')->count(),
             'totalValuedProperties' => (clone $this->baseQuery())->whereNotNull('estimated_value')->count(),
+            'totalValues' => (clone $this->baseQuery())->whereNotNull('estimated_value')->sum('estimated_value')
         ];
     }    
             
@@ -181,7 +182,7 @@ class Reports extends Page
             'patrimoine-par-type.xlsx'
         );
     }
-
+ 
     public function exportSansTitreExcel()
     {
         $query = (clone $this->baseQuery())->whereNull('land_title_number');
@@ -203,6 +204,7 @@ class Reports extends Page
             ['Total des biens sans titre foncier', $data['totalPropertiesWithoutTitle']],
             ['Total des biens sans documents', $data['totalPropertiesWithoutDocuments']],
             ['Total des biens valorisés', $data['totalValuedProperties']],
+            ['Valeur totale estimée', $data['totalValues']],
         ];
  
         return Excel::download(
