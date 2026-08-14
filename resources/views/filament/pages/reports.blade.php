@@ -55,22 +55,122 @@
         </div>
     </x-filament::card>
 
-    {{-- par federation --}}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {{-- par federation --}}
 
-    <x-filament::card class="mb-6">
+        <x-filament::card class="mb-6">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-semibold">
+                    Patrimoine par fédération
+                </h3>
+                <x-filament::button size="sm" wire:click="exportFederationExcel" icon="heroicon-o-arrow-down-tray">
+                    Exporter (Excel)
+                </x-filament::button>
+            </div>
+            <ul class="space-y-1">
+                @forelse ($byFederation as $federation)
+                    <li class="flex justify-between text-sm">
+                        <span>{{ $federation->label }}</span>
+                        <span class="font-medium">{{ $federation->total }}</span>
+                    </li>
+                @empty
+                    <li class="text-sm text-gray-400">
+                        Aucune donnée
+                    </li>
+                @endforelse
+            </ul>
+        </x-filament::card>
+
+        {{-- par district --}}
+
+        <x-filament::card>
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-semibold">
+                    Patrimoine par district
+                </h3>
+                <x-filament::button size="sm" wire:click="exportDistrictExcel" icon="heroicon-o-arrow-down-tray">
+                    Exporter (Excel)
+                </x-filament::button>
+            </div>
+            <ul class="space-y-1">
+                @forelse ($byDistrict as $district)
+                    <li class="flex justify-between text-sm">
+                        <span>{{ $district->label }}</span>
+                        <span class="font-medium">{{ $district->total }}</span>
+                    </li>
+                @empty
+                    <li class="text-sm text-gray-400">
+                        Aucune donnée
+                    </li>
+                @endforelse
+            </ul>
+        </x-filament::card>
+
+        {{-- par eglise --}}
+
+        <x-filament::card>
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-semibold">
+                    Patrimoine par église
+                </h3>
+                <x-filament::button size="sm" wire:click="exportChurchExcel" icon="heroicon-o-arrow-down-tray">
+                    Exporter (Excel)
+                </x-filament::button>
+            </div>
+            <ul class="space-y-1">
+                @forelse ($byChurch as $church)
+                    <li class="flex justify-between text-sm">
+                        <span>{{ $church->label }}</span>
+                        <span class="font-medium">{{ $church->total }}</span>
+                    </li>
+                @empty
+                    <li class="text-sm text-gray-400">
+                        Aucune donnée
+                    </li>
+                @endforelse
+            </ul>
+        </x-filament::card>
+        
+        {{-- par type --}}
+
+        <x-filament::card>
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="font-semibold">
+                    Répartition par type de bien
+                </h3>
+                <x-filament::button size="sm" wire:click="exportTypeExcel" icon="heroicon-o-arrow-down-tray">
+                    Exporter (Excel)
+                </x-filament::button>
+            </div>
+            <ul class="space-y-1">
+                @forelse($byType as $type)
+                    <li class="flex justify-between text-sm">
+                        <span>{{ $type->label }}</span>
+                        <span class="font-medium">{{ $type->total }}</span>
+                    </li>
+                @empty
+                    <li class="text-sm text-gray-400">Aucune donnée</li>
+                @endforelse
+            </ul>
+        </x-filament::card>
+
+    </div>
+
+    {{-- biens sans titre --}}
+
+    <x-filament::card class="mt-6">
         <div class="flex justify-between items-center mb-3">
             <h3 class="font-semibold">
-                Patrimoine par fédération
+                Biens sans titre foncier ({{ $withoutTitle->count() }})
             </h3>
-            <x-filament::button size="sm" wire:click="exportFederationExcel" icon="heroicon-o-arrow-down-tray">
+            <x-filament::button size="sm" wire:click="exportWithoutTitleExcel" icon="heroicon-o-arrow-down-tray">
                 Exporter (Excel)
             </x-filament::button>
         </div>
         <ul class="space-y-1">
-            @forelse ($byFederation as $federation)
-                <li class="flex justify-between text-sm">
-                    <span>{{ $federation->label }}</span>
-                    <span class="font-medium">{{ $federation->total }}</span>
+            @forelse ($withoutTitle as $property)
+                <li class="text-sm">
+                    {{ $property->reference }} — {{ $property->name }} ({{ $property->church?->name }})
                 </li>
             @empty
                 <li class="text-sm text-gray-400">
@@ -80,22 +180,21 @@
         </ul>
     </x-filament::card>
 
-    {{-- par district --}}
+    {{-- documents manquants --}}
 
-    <x-filament::card>
+    <x-filament::card class="mt-6">
         <div class="flex justify-between items-center mb-3">
             <h3 class="font-semibold">
-                Patrimoine par district
+                Biens avec documents manquants ({{ $missingDocuments->count() }})
             </h3>
-            <x-filament::button size="sm" wire:click="exportDistrictExcel" icon="heroicon-o-arrow-down-tray">
+            <x-filament::button size="sm" wire:click="exportMissingDocumentsExcel" icon="heroicon-o-arrow-down-tray">
                 Exporter (Excel)
             </x-filament::button>
         </div>
         <ul class="space-y-1">
-            @forelse ($byDistrict as $district)
-                <li class="flex justify-between text-sm">
-                    <span>{{ $district->label }}</span>
-                    <span class="font-medium">{{ $district->total }}</span>
+            @forelse ($missingDocuments as $property)
+                <li class="text-sm">
+                    {{ $property->reference }} — {{ $property->name }} ({{ $property->church?->name }})
                 </li>
             @empty
                 <li class="text-sm text-gray-400">
@@ -104,53 +203,4 @@
             @endforelse
         </ul>
     </x-filament::card>
-
-    {{-- par eglise --}}
-
-    <x-filament::card>
-        <div class="flex justify-between items-center mb-3">
-            <h3 class="font-semibold">
-                Patrimoine par église
-            </h3>
-            <x-filament::button size="sm" wire:click="exportDistrictExcel" icon="heroicon-o-arrow-down-tray">
-                Exporter (Excel)
-            </x-filament::button>
-        </div>
-        <ul class="space-y-1">
-            @forelse ($byChurch as $church)
-                <li class="flex justify-between text-sm">
-                    <span>{{ $church->label }}</span>
-                    <span class="font-medium">{{ $church->total }}</span>
-                </li>
-            @empty
-                <li class="text-sm text-gray-400">
-                    Aucune donnée
-                </li>
-            @endforelse
-        </ul>
-    </x-filament::card>
-    
-    {{-- par type --}}
-
-    <x-filament::card>
-        <div class="flex justify-between items-center mb-2">
-            <h3 class="font-semibold">
-                Répartition par type de bien
-            </h3>
-            <x-filament::button size="sm" wire:click="exportTypeExcel" icon="heroicon-o-arrow-down-tray">
-                Exporter (Excel)
-            </x-filament::button>
-        </div>
-        <ul class="space-y-1">
-            @forelse($byType as $type)
-                <li class="flex justify-between text-sm">
-                    <span>{{ $type->label }}</span>
-                    <span class="font-medium">{{ $type->total }}</span>
-                </li>
-            @empty
-                <li class="text-sm text-gray-400">Aucune donnée</li>
-            @endforelse
-        </ul>
-    </x-filament::card>
-
 </x-filament-panels::page>

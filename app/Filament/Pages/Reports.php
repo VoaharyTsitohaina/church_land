@@ -113,11 +113,11 @@ class Reports extends Page
                 ->groupBy('churches.name')
                 ->get(),
 
-            'sansTitre' => (clone $this->baseQuery())
+            'withoutTitle' => (clone $this->baseQuery())
                 ->whereNull('land_title_number')
                 ->with('church')->get(),
             
-            'documentsManquants' => (clone $this->baseQuery())
+            'missingDocuments' => (clone $this->baseQuery())
                 ->whereDoesntHave('media')
                 ->with('church')->get(),
 
@@ -183,13 +183,13 @@ class Reports extends Page
         );
     }
  
-    public function exportSansTitreExcel()
+    public function exportWithoutTitleExcel()
     {
         $query = (clone $this->baseQuery())->whereNull('land_title_number');
         return Excel::download(new PropertiesExport($query), 'biens-sans-titre.xlsx');
     }
 
-    public function exportDocumentsManquantsExcel()
+    public function exportMissingDocumentsExcel()
     {
         $query = (clone $this->baseQuery())->whereDoesntHave('media');
         return Excel::download(new PropertiesExport($query), 'biens-sans-documents.xlsx');
