@@ -11,6 +11,8 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
+
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ChurchResource extends Resource
@@ -82,4 +84,21 @@ class ChurchResource extends Resource
             'edit' => Pages\EditChurch::route('/{record}/edit'),
         ];
     }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        
+        $user = Auth::user();
+        /** @var \App\Models\User $user */
+        
+        if ($user->hasRole('district_manager')) {
+            $query->where('district_id', $user->district_id);
+        } elseif ($user->hasRole('federation_admin')) {
+            $query->where('federation_id', $user->federation_id);
+        }
+
+        return $query;
+    }
+    
 }

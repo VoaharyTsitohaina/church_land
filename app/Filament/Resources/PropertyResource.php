@@ -229,20 +229,20 @@ class PropertyResource extends Resource
         ];
     }
 
- public static function getEloquentQuery(): Builder
-{
-    $query = parent::getEloquentQuery();
-    
-    $user = Auth::user();
-    /** @var \App\Models\User $user */
-    
-    if ($user->hasRole('district_manager')) {
-        $query->whereHas('church', fn ($q) => $q->where('district_id', $user->district_id));
-    } elseif ($user->hasRole('federation_admin')) {
-        $query->whereHas('church.district', fn ($q) => $q->where('federation_id', $user->federation_id));
-    }
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        
+        $user = Auth::user();
+        /** @var \App\Models\User $user */
+        
+        if ($user->hasRole('district_manager')) {
+            $query->whereHas('church', fn ($q) => $q->where('district_id', $user->district_id));
+        } elseif ($user->hasRole('federation_admin')) {
+            $query->whereHas('church.district', fn ($q) => $q->where('federation_id', $user->federation_id));
+        }
 
-    return $query;
-}
+        return $query;
+    }
 
 }

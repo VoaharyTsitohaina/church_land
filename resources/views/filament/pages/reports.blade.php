@@ -46,7 +46,7 @@
             </div>
             <div>
                 <p class="text-sm text-gray-500">Valeur estimée totale</p>
-                <p class="text-2xl font-bold">{{ number_format($totalValues, 0, ',', ' ') }}</p>
+                <p class="text-lg font-semibold">{{ number_format($totalValues, 0, ',', ' ') }}</p>
             </div>
             <div>
                 <p class="text-sm text-gray-500">Nombre de propriétés sans titre</p>

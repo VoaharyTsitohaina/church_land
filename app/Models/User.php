@@ -25,6 +25,9 @@ class User extends Authenticatable
         'password',
     ];
 
+    public function federation() { return $this->belongsTo(Federation::class); }
+    public function district() { return $this->belongsTo(District::class); }
+    
     /**
      * The attributes that should be hidden for serialization.
      *
