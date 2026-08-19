@@ -67,6 +67,7 @@ class UserResource extends Resource
                             ->relationship('federation', 'name')
                             ->preload()
                             ->searchable()
+                            ->visible(fn (Get $get) => static::roleNeedsScope($get('roles')))
                             ->default(null),
                         Forms\Components\Select::make('district_id')
                             ->label('District')
@@ -89,36 +90,22 @@ class UserResource extends Resource
 
 
     protected static function roleNeedsScope(int|string|null $roleId, bool $onlyDistrict = false)
-        {
-            if (empty($roleId)) return false;
-
-            // Récupère directement le nom du rôle unique par son ID
-            $roleName = \Spatie\Permission\Models\Role::where('id', $roleId)->value('name');
-
-            if ($roleName === 'admin') {
-                return false;
-            }
-            
-            else if ($onlyDistrict) {
-                return $roleName === 'district_manager';
-            }
-
-            return in_array($roleName, ['district_manager', 'federation_admin']);
-        }
-
-
-    protected static function roleNeedsjScope(?array $roleIds, bool $onlyDistrict = false): bool
     {
-        if (empty($roleIds)) return false;
+        if (empty($roleId)) return false;
 
-        $roleNames = \Spatie\Permission\Models\Role::whereIn('id', $roleIds)->pluck('name')->toArray();
+        // Récupère directement le nom du rôle unique par son ID
+        $roleName = \Spatie\Permission\Models\Role::where('id', $roleId)->value('name');
 
-        if ($onlyDistrict) {
-            return in_array('district_manager', $roleNames);
+        if ($roleName === 'admin') {
+            return false;
+        }
+            
+        else if ($onlyDistrict) {
+            return $roleName === 'district_manager';
         }
 
-        return array_intersect(['district_manager', 'federation_admin'], $roleNames) !== [];
-    }    
+        return in_array($roleName, ['district_manager', 'federation_admin']);
+    }
 
     public static function table(Table $table): Table
     {

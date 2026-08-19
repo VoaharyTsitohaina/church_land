@@ -11,6 +11,7 @@ use Filament\Forms\Get;
 use Filament\Pages\Page;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Property;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ArrayExport;
@@ -32,12 +33,28 @@ class Reports extends Page
     public ?int $church_id = null;
 
     public function mount(): void
-    {
-        $this->form->fill();
+{
+    $user = Auth::user();
+    /** @var \App\Models\User $user */
+
+    if ($user->hasRole('district_manager')) {
+        $this->district_id = $user->district_id;
+    } elseif ($user->hasRole('federation_admin')) {
+        $this->federation_id = $user->federation_id;
     }
+
+    $this->form->fill([
+        'federation_id' => $this->federation_id,
+        'district_id' => $this->district_id,
+        'church_id' => $this->church_id,
+    ]);
+}
 
     public function form(Form $form): Form
     {
+        $user = Auth::user();
+        /** @var \App\Models\User $user */
+
         return $form
             ->schema([
                 Select::make('federation_id')
@@ -49,7 +66,8 @@ class Reports extends Page
                     ->afterStateUpdated(function (callable $set) {
                         $set('district_id', null);
                         $set('church_id', null);
-                    }),
+                    })
+                    ->visible(fn () => !$user->hasRole(['district_manager', 'federation_admin'])),
 
                 Select::make('district_id')
                     ->label('District')
@@ -63,7 +81,8 @@ class Reports extends Page
                     ->live()
                     ->afterStateUpdated(function (callable $set) {
                         $set('church_id', null);
-                    }),
+                    })
+                    ->visible(fn () => !$user->hasRole('district_manager')),
 
                 Select::make('church_id')
                     ->label('Church')
@@ -81,12 +100,28 @@ class Reports extends Page
             ])->columns(3);
     }
 
+    protected function userScope(Builder $query): Builder
+    {
+        $user = Auth::user();
+        /** @var \App\Models\User $user */
+
+        if ($user->hasRole('district_manager')) {
+            $query->whereHas('church', fn ($q) => $q->where('district_id', $user->district_id));
+        } elseif ($user->hasRole('federation_admin')) {
+            $query->whereHas('church.district', fn ($q) => $q->where('federation_id', $user->federation_id));
+        }
+
+        return $query;
+    }
+
     protected function baseQuery(): Builder
     {
-        return Property::query()
+        $query = Property::query()
             ->when($this->church_id, fn ($q) => $q->where('church_id', $this->church_id))
             ->when($this->district_id && !$this->church_id, fn ($q) => $q->whereHas('church', fn ($q2) => $q2->where('district_id', $this->district_id)))
             ->when($this->federation_id && !$this->district_id, fn ($q) => $q->whereHas('church.district', fn ($q2) => $q2->where('federation_id', $this->federation_id)));
+
+        return $this->userScope($query);
     }
 
     public function getViewData(): array
