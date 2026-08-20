@@ -33,22 +33,22 @@ class Reports extends Page
     public ?int $church_id = null;
 
     public function mount(): void
-{
-    $user = Auth::user();
-    /** @var \App\Models\User $user */
+    {
+        $user = Auth::user();
+        /** @var \App\Models\User $user */
 
-    if ($user->hasRole('district_manager')) {
-        $this->district_id = $user->district_id;
-    } elseif ($user->hasRole('federation_admin')) {
-        $this->federation_id = $user->federation_id;
+        if ($user->hasRole('district_manager')) {
+            $this->district_id = $user->district_id;
+        } elseif ($user->hasRole('federation_admin')) {
+            $this->federation_id = $user->federation_id;
+        }
+
+        $this->form->fill([
+            'federation_id' => $this->federation_id,
+            'district_id' => $this->district_id,
+            'church_id' => $this->church_id,
+        ]);
     }
-
-    $this->form->fill([
-        'federation_id' => $this->federation_id,
-        'district_id' => $this->district_id,
-        'church_id' => $this->church_id,
-    ]);
-}
 
     public function form(Form $form): Form
     {

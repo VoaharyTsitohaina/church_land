@@ -53,7 +53,7 @@ class UserResource extends Resource
                     ->columns(2),
                 
 
-                Forms\Components\Section::make('Rôle et périmètre')
+                Forms\Components\Section::make('Rôle')
                     ->schema([
                         Forms\Components\Select::make('roles')
                             ->label('Rôle')
@@ -67,7 +67,7 @@ class UserResource extends Resource
                             ->relationship('federation', 'name')
                             ->preload()
                             ->searchable()
-                            ->visible(fn (Get $get) => static::roleNeedsScope($get('roles')))
+                            ->visible(fn (Get $get) => static::roleNeedsScope($get('roles')[0] ?? null))
                             ->default(null),
                         Forms\Components\Select::make('district_id')
                             ->label('District')
@@ -81,7 +81,7 @@ class UserResource extends Resource
                             )
                             ->preload()
                             ->searchable()
-                            ->visible(fn (Get $get) => static::roleNeedsScope($get('roles'), onlyDistrict: true))
+                            ->visible(fn (Get $get) => static::roleNeedsScope($get('roles')[0] ?? null, onlyDistrict: true))
                             ->default(null),
                     ]),
             ])

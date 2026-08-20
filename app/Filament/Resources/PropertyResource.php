@@ -17,6 +17,13 @@ use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Illuminate\Support\Facades\Auth;
 use Dotswan\MapPicker\Fields\Map;
 use App\Exports\ArrayExport;
+use Filament\Infolists\Infolist;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\SpatieMediaLibraryImageEntry;
+use Filament\Infolists\Components\TextEntry;
+use Override;
+use Filament\Infolists\Components\Actions\Action as InfolistAction;
+
 
 class PropertyResource extends Resource
 {
@@ -136,6 +143,100 @@ class PropertyResource extends Resource
             ]);
     }
 
+
+    #[Override]
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Section::make('Identification')
+                    ->schema([
+                        TextEntry::make('reference')
+                            ->label('Reference'),
+                        TextEntry::make('name')
+                            ->label('Name'),
+                        TextEntry::make('type.name')
+                            ->label('Type'),
+                        
+                        
+                        TextEntry::make('estimated_value')
+                            ->label('Estimated Value'),
+                        TextEntry::make('current_value')
+                            ->label('Current Value'),
+                    ])->columns(3),
+
+                Section::make('Localisation')
+                    ->schema([
+                        TextEntry::make('church.name')
+                            ->label('Église'),
+                        TextEntry::make('region')
+                            ->label('Region'),
+                        TextEntry::make('admin_district')
+                            ->label('Admin District'),
+                        TextEntry::make('commune')
+                            ->label('Commune'),
+                        TextEntry::make('fokontany')
+                            ->label('Fokontany'),
+                        TextEntry::make('address')
+                            ->label('Adresse'),
+                        TextEntry::make('latitude')
+                            ->label('Latitude'),
+                        TextEntry::make('longitude')
+                            ->label('Longitude'),
+                    ])->columns(3),
+
+                Section::make('Information foncière')
+                    ->schema([
+                        TextEntry::make('area')
+                            ->label('Superficie (m²)'),
+                        TextEntry::make('land_title_number')
+                            ->label('Land Title Number'),
+                        TextEntry::make('cadastral_number')
+                            ->label('Cadastral Number'),
+                        TextEntry::make('legal_status')
+                            ->label('Legal Status'),
+                        TextEntry::make('acquisition_mode')
+                            ->label('Acquisition Mode'),
+                        TextEntry::make('acquisition_date')
+                            ->dateTime()
+                            ->label('Acquisition Date'),
+                    ])->columns(2),
+
+                Section::make('Observations')
+                    ->schema([
+                        TextEntry::make('observations')
+                            ->label('Observations'),
+                        TextEntry::make('history')
+                            ->label('History'),
+                    ])->columns(2),
+
+                Section::make('Documents')
+                    ->schema([
+                        TextEntry::make('titre_foncier')
+                            ->label('Titre foncier')
+                            ->getStateUsing(fn ($record) => $record->getFirstMedia('titre_foncier') ? 'Voir le document' : null)
+                            ->placeholder('Aucun document')
+                            ->url(fn ($record) => $record->getFirstMedia('titre_foncier')?->getUrl(), shouldOpenInNewTab: true)
+                            ->icon('heroicon-o-document'),
+
+                        TextEntry::make('plan')
+                            ->label('Plan')
+                            ->getStateUsing(fn ($record) => $record->getFirstMedia('plan') ? 'Voir le document' : null)
+                            ->placeholder('Aucun document')
+                            ->url(fn ($record) => $record->getFirstMedia('plan')?->getUrl(), shouldOpenInNewTab: true)
+                            ->icon('heroicon-o-document'),
+
+                        TextEntry::make('acte')
+                            ->label('Acte')
+                            ->getStateUsing(fn ($record) => $record->getFirstMedia('acte') ? 'Voir le document' : null)
+                            ->placeholder('Aucun document')
+                            ->url(fn ($record) => $record->getFirstMedia('acte')?->getUrl(), shouldOpenInNewTab: true)
+                            ->icon('heroicon-o-document'),
+                    ])->columns(3),
+                            ]);
+    }
+
+
     public static function table(Table $table): Table
     {
         return $table
@@ -184,7 +285,8 @@ class PropertyResource extends Resource
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('current_value')
-                    ->searchable(),
+                    ->numeric()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('creator.name')
                     ->searchable()
                     ->sortable(),
@@ -204,6 +306,7 @@ class PropertyResource extends Resource
                 ->query(fn ($query) => $query->whereNull('land_title_number')),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
@@ -225,6 +328,7 @@ class PropertyResource extends Resource
         return [
             'index' => Pages\ListProperties::route('/'),
             'create' => Pages\CreateProperty::route('/create'),
+            'view' => Pages\ViewProperty::route('/{record}'),
             'edit' => Pages\EditProperty::route('/{record}/edit'),
         ];
     }
