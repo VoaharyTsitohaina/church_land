@@ -17,9 +17,12 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ArrayExport;
 use App\Exports\PropertiesExport;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Livewire\WithPagination;
 
 class Reports extends Page
 {
+    use WithPagination;
+
     protected static ?string $navigationLabel = 'Reports';
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
@@ -142,11 +145,7 @@ class Reports extends Page
                 ->groupBy('districts.name')
                 ->get(),
 
-            'byChurch' => (clone $this->baseQuery())
-                ->join('churches', 'properties.church_id', '=', 'churches.id')
-                ->select('churches.name as label', DB::raw('count(properties.id) as total'))
-                ->groupBy('churches.name')
-                ->get(),
+            'byChurch' => $this->byChurchQuery()->paginate(5, ['*'], 'church_page'),
 
             'withoutTitle' => (clone $this->baseQuery())
                 ->whereNull('land_title_number')
@@ -174,6 +173,14 @@ class Reports extends Page
         ];
     }    
             
+    public function byChurchQuery()
+    {
+        return (clone $this->baseQuery())
+            ->join('churches', 'properties.church_id', '=', 'churches.id')
+            ->select('churches.name as label', DB::raw('count(properties.id) as total'))
+            ->groupBy('churches.name');
+    }
+
     public function exportFederationExcel()
     {
         $rows = $this->getViewData()['byFederation']
@@ -198,7 +205,8 @@ class Reports extends Page
 
     public function exportChurchExcel()
     {
-        $rows = $this->getViewData()['byChurch']
+        $rows = $this->byChurchQuery()
+            ->get()
             ->map(fn ($r) => [$r->label, $r->total])->toArray();
         
         return Excel::download(

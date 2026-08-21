@@ -129,6 +129,9 @@
                     </li>
                 @endforelse
             </ul>
+            <div class="mt-3">
+                {{ $byChurch->links(data: ['scrollTo' => false]) }}
+            </div>
         </x-filament::card>
         
         {{-- par type --}}
