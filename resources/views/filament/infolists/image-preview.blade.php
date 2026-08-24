@@ -1,0 +1,1 @@
+<img src="{{ $url }}" class="w-full h-auto rounded-lg" alt="Aperçu">

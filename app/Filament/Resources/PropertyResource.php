@@ -23,6 +23,7 @@ use Filament\Infolists\Components\SpatieMediaLibraryImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Override;
 use Filament\Infolists\Components\Actions\Action as InfolistAction;
+use Dotswan\MapPicker\Infolists\MapEntry;
 
 
 class PropertyResource extends Resource
@@ -183,6 +184,16 @@ class PropertyResource extends Resource
                             ->label('Latitude'),
                         TextEntry::make('longitude')
                             ->label('Longitude'),
+                        MapEntry::make('location')
+                            ->label('Localisation')
+                            ->default(function ($record) {
+                                return [
+                                    'lat' => $record->latitude,
+                                    'lng' => $record->longitude,
+                                ];
+                            })
+                            ->zoom(15)
+                            ->showMarker(true)
                     ])->columns(3),
 
                 Section::make('Information foncière')
@@ -200,7 +211,7 @@ class PropertyResource extends Resource
                         TextEntry::make('acquisition_date')
                             ->dateTime()
                             ->label('Acquisition Date'),
-                    ])->columns(2),
+                    ])->columns(3),
 
                 Section::make('Observations')
                     ->schema([
@@ -214,25 +225,68 @@ class PropertyResource extends Resource
                     ->schema([
                         TextEntry::make('titre_foncier')
                             ->label('Titre foncier')
+                            ->badge()
                             ->getStateUsing(fn ($record) => $record->getFirstMedia('titre_foncier') ? 'Voir le document' : null)
                             ->placeholder('Aucun document')
                             ->url(fn ($record) => $record->getFirstMedia('titre_foncier')?->getUrl(), shouldOpenInNewTab: true)
                             ->icon('heroicon-o-document'),
 
-                        TextEntry::make('plan')
+                        SpatieMediaLibraryImageEntry::make('plan')
+                            ->collection('plan')
                             ->label('Plan')
-                            ->getStateUsing(fn ($record) => $record->getFirstMedia('plan') ? 'Voir le document' : null)
+                            ->size(120)
                             ->placeholder('Aucun document')
-                            ->url(fn ($record) => $record->getFirstMedia('plan')?->getUrl(), shouldOpenInNewTab: true)
-                            ->icon('heroicon-o-document'),
+                            ->extraImgAttributes(['class' => 'cursor-pointer hover:opacity-80 transition'])
+                            ->action(
+                                InfolistAction::make('viewPhoto')
+                            ->modalContent(fn (array $arguments, $record) => view('filament.infolists.image-preview', [
+                                'url' => $arguments['url'] ?? $record->getFirstMediaUrl('plan'),
+                            ]))
+                            ->modalSubmitAction(false)
+                            ->modalCancelActionLabel('Fermer')),
 
-                        TextEntry::make('acte')
+                        SpatieMediaLibraryImageEntry::make('acte')
+                            ->collection('acte')
                             ->label('Acte')
-                            ->getStateUsing(fn ($record) => $record->getFirstMedia('acte') ? 'Voir le document' : null)
+                            ->size(120)
                             ->placeholder('Aucun document')
-                            ->url(fn ($record) => $record->getFirstMedia('acte')?->getUrl(), shouldOpenInNewTab: true)
-                            ->icon('heroicon-o-document'),
-                    ])->columns(3),
+                            ->extraImgAttributes(['class' => 'cursor-pointer hover:opacity-80 transition'])
+                            ->action(
+                                InfolistAction::make('viewPhoto')
+                            ->modalContent(fn (array $arguments, $record) => view('filament.infolists.image-preview', [
+                                'url' => $arguments['url'] ?? $record->getFirstMediaUrl('acte'),
+                            ]))
+                            ->modalSubmitAction(false)
+                            ->modalCancelActionLabel('Fermer')),
+
+                        SpatieMediaLibraryImageEntry::make('photos')
+                            ->collection('photos')
+                            ->label('Photos')
+                            ->size(120)
+                            ->placeholder('Aucun document')
+                            ->extraImgAttributes(['class' => 'cursor-pointer hover:opacity-80 transition'])
+                            ->action(
+                                InfolistAction::make('viewPhoto')
+                            ->modalContent(fn (array $arguments, $record) => view('filament.infolists.image-preview', [
+                                'url' => $arguments['url'] ?? $record->getFirstMediaUrl('photos'),
+                            ]))
+                            ->modalSubmitAction(false)
+                            ->modalCancelActionLabel('Fermer')),
+
+                        SpatieMediaLibraryImageEntry::make('autres')
+                            ->collection('autres')
+                            ->label('Autres')
+                            ->size(120)
+                            ->placeholder('Aucun document')
+                            ->extraImgAttributes(['class' => 'cursor-pointer hover:opacity-80 transition'])
+                            ->action(
+                                InfolistAction::make('viewPhoto')
+                            ->modalContent(fn (array $arguments, $record) => view('filament.infolists.image-preview', [
+                                'url' => $arguments['url'] ?? $record->getFirstMediaUrl('autres'),
+                            ]))
+                            ->modalSubmitAction(false)
+                            ->modalCancelActionLabel('Fermer')),
+                    ])->columns(2),
                             ]);
     }
 
