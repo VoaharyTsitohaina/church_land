@@ -24,7 +24,7 @@ use Filament\Infolists\Components\TextEntry;
 use Override;
 use Filament\Infolists\Components\Actions\Action as InfolistAction;
 use Dotswan\MapPicker\Infolists\MapEntry;
-
+use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
 
 class PropertyResource extends Resource
 {
@@ -354,8 +354,12 @@ class PropertyResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('church_id')->relationship('church', 'name'),
-                Tables\Filters\SelectFilter::make('property_type_id')->relationship('type', 'name'),
+                Tables\Filters\SelectFilter::make('church_id')
+                    ->label('Church')
+                    ->relationship('church', 'name'),
+                Tables\Filters\SelectFilter::make('property_type_id')
+                    ->label('Type')
+                    ->relationship('type', 'name'),
                 Tables\Filters\Filter::make('sans_titre')
                 ->query(fn ($query) => $query->whereNull('land_title_number')),
             ])
@@ -373,7 +377,7 @@ class PropertyResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            ActivitylogRelationManager::class
         ];
     }
 

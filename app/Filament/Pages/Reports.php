@@ -17,11 +17,13 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ArrayExport;
 use App\Exports\PropertiesExport;
 use Barryvdh\DomPDF\Facade\Pdf;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Livewire\WithPagination;
 
 class Reports extends Page
 {
     use WithPagination;
+    use HasPageShield;
 
     protected static ?string $navigationLabel = 'Reports';
 

@@ -4,12 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Override;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Property extends Model implements HasMedia
 {
-  use InteractsWithMedia;
+  use InteractsWithMedia, LogsActivity;
     protected $fillable = ['reference','name','property_type_id','church_id','region',
   'admin_district','commune','fokontany','address','latitude','longitude','area',
   'land_title_number','cadastral_number','legal_status','acquisition_mode',
@@ -18,6 +20,7 @@ class Property extends Model implements HasMedia
   public function church() { return $this->belongsTo(Church::class); }
   public function type() { return $this->belongsTo(PropertyType::class, 'property_type_id'); }
   public function creator() { return $this->belongsTo(User::class, 'created_by'); }
+  
   #[Override]
 	public function registerMediaCollections(): void
   {
@@ -27,4 +30,9 @@ class Property extends Model implements HasMedia
     $this->addMediaCollection('photos');
     $this->addMediaCollection('autres');
   }
+
+  public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()->logOnlyDirty()->logAll();
+    }
 }
