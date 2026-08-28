@@ -18,12 +18,14 @@ use App\Exports\ArrayExport;
 use App\Exports\PropertiesExport;
 use Barryvdh\DomPDF\Facade\Pdf;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
+use Filament\Forms\Concerns\InteractsWithForms;
 use Livewire\WithPagination;
 
 class Reports extends Page
 {
     use WithPagination;
     use HasPageShield;
+    use InteractsWithForms;
 
     protected static ?string $navigationLabel = 'Reports';
 
@@ -132,13 +134,13 @@ class Reports extends Page
     public function getViewData(): array
     {
         return [
-            'byFederation' => (clone $this->baseQuery())
-                ->join('churches', 'properties.church_id', '=', 'churches.id')
-                ->join('districts', 'churches.district_id', '=', 'districts.id')
-                ->join('federations', 'districts.federation_id', '=', 'federations.id')
-                ->select('federations.name as label', DB::raw('count(properties.id) as total'))
-                ->groupBy('federations.name')
-                ->get(),
+            // 'byFederation' => (clone $this->baseQuery())
+            //     ->join('churches', 'properties.church_id', '=', 'churches.id')
+            //     ->join('districts', 'churches.district_id', '=', 'districts.id')
+            //     ->join('federations', 'districts.federation_id', '=', 'federations.id')
+            //     ->select('federations.name as label', DB::raw('count(properties.id) as total'))
+            //     ->groupBy('federations.name')
+            //     ->get(),
 
             'byDistrict' => (clone $this->baseQuery())
                 ->join('churches', 'properties.church_id', '=', 'churches.id')
@@ -157,14 +159,14 @@ class Reports extends Page
                 ->whereDoesntHave('media')
                 ->with('church')->get(),
 
-            'byType' => (clone $this->baseQuery())
-                ->join('property_types', 'properties.property_type_id', '=', 'property_types.id')
-                ->select(
-                    'property_types.name as label',
-                    DB::raw('COUNT(properties.id) as total')
-                )
-                ->groupBy('property_types.id', 'property_types.name')
-                ->get(),
+            // 'byType' => (clone $this->baseQuery())
+            //     ->join('property_types', 'properties.property_type_id', '=', 'property_types.id')
+            //     ->select(
+            //         'property_types.name as label',
+            //         DB::raw('COUNT(properties.id) as total')
+            //     )
+            //     ->groupBy('property_types.id', 'property_types.name')
+            //     ->get(),
 
             'totalProperties' => (clone $this->baseQuery())->count(),
             'totalPropertiesWithTitle' => (clone $this->baseQuery())->whereNotNull('land_title_number')->count(),
@@ -183,16 +185,16 @@ class Reports extends Page
             ->groupBy('churches.name');
     }
 
-    public function exportFederationExcel()
-    {
-        $rows = $this->getViewData()['byFederation']
-            ->map(fn ($r) => [$r->label, $r->total])->toArray();
+    // public function exportFederationExcel()
+    // {
+    //     $rows = $this->getViewData()['byFederation']
+    //         ->map(fn ($r) => [$r->label, $r->total])->toArray();
         
-        return Excel::download(
-            new ArrayExport($rows, ['Fédération/Mission', 'Total de biens']),
-            'patrimoine-par-federation.xlsx'
-        );
-    }
+    //     return Excel::download(
+    //         new ArrayExport($rows, ['Fédération/Mission', 'Total de biens']),
+    //         'patrimoine-par-federation.xlsx'
+    //     );
+    // }
 
     public function exportDistrictExcel()
     {
@@ -217,16 +219,16 @@ class Reports extends Page
         );
     }
 
-    public function exportTypeExcel()
-    {
-        $rows = $this->getViewData()['byType']
-            ->map(fn ($r) => [$r->label ?? 'Non spécifié', $r->total])->toArray();
+    // public function exportTypeExcel()
+    // {
+    //     $rows = $this->getViewData()['byType']
+    //         ->map(fn ($r) => [$r->label ?? 'Non spécifié', $r->total])->toArray();
         
-        return Excel::download(
-            new ArrayExport($rows, ['Type de bien', 'Total de biens']),
-            'patrimoine-par-type.xlsx'
-        );
-    }
+    //     return Excel::download(
+    //         new ArrayExport($rows, ['Type de bien', 'Total de biens']),
+    //         'patrimoine-par-type.xlsx'
+    //     );
+    // }
  
     public function exportWithoutTitleExcel()
     {
@@ -272,5 +274,13 @@ class Reports extends Page
         return response()->streamDownload(
             fn () => print(Pdf::loadView('reports.patrimoine', $data)->output()), 'rapport-patrimoine.pdf'
         );
+    }
+
+    protected function getFooterWidgets(): array
+    {
+        return [
+            \App\Filament\Widgets\ByFederationReportWidget::class,
+            \App\Filament\Widgets\ByTypeReportWidget::class,
+        ];
     }
 }

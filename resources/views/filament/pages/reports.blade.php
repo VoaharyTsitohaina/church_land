@@ -56,30 +56,6 @@
     </x-filament::card>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {{-- par federation --}}
-
-        <x-filament::card class="mb-6">
-            <div class="flex justify-between items-center mb-3">
-                <h3 class="font-semibold">
-                    Patrimoine par fédération
-                </h3>
-                <x-filament::button size="sm" wire:click="exportFederationExcel" icon="heroicon-o-arrow-down-tray">
-                    Exporter (Excel)
-                </x-filament::button>
-            </div>
-            <ul class="space-y-1">
-                @forelse ($byFederation as $federation)
-                    <li class="flex justify-between text-sm">
-                        <span>{{ $federation->label }}</span>
-                        <span class="font-medium">{{ $federation->total }}</span>
-                    </li>
-                @empty
-                    <li class="text-sm text-gray-400">
-                        Aucune donnée
-                    </li>
-                @endforelse
-            </ul>
-        </x-filament::card>
 
         {{-- par district --}}
 
@@ -134,28 +110,6 @@
             </div>
         </x-filament::card>
         
-        {{-- par type --}}
-
-        <x-filament::card>
-            <div class="flex justify-between items-center mb-2">
-                <h3 class="font-semibold">
-                    Répartition par type de bien
-                </h3>
-                <x-filament::button size="sm" wire:click="exportTypeExcel" icon="heroicon-o-arrow-down-tray">
-                    Exporter (Excel)
-                </x-filament::button>
-            </div>
-            <ul class="space-y-1">
-                @forelse($byType as $type)
-                    <li class="flex justify-between text-sm">
-                        <span>{{ $type->label }}</span>
-                        <span class="font-medium">{{ $type->total }}</span>
-                    </li>
-                @empty
-                    <li class="text-sm text-gray-400">Aucune donnée</li>
-                @endforelse
-            </ul>
-        </x-filament::card>
 
     </div>
 
