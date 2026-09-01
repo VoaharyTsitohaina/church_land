@@ -5,12 +5,34 @@ namespace App\Filament\Widgets;
 use App\Models\Property;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use Livewire\Attributes\On;
+use App\Filament\Concerns\ScopesPropertiesByUser;
 
 class LegalStatusStatsWidget extends BaseWidget
 {
+    use ScopesPropertiesByUser;
     // protected static ?string $pollingInterval = null;
     protected static ?int $sort = 2;
     protected ?string $heading = "État de complétude des dossiers";
+
+        // Recalcule les stats quand le filtre du dashboard change
+    #[On('dashboard-filter-updated')]
+    public function refreshStats(): void
+    {
+        // Livewire re-render automatiquement getStats() au prochain cycle
+    }
+
+    protected function scopedProperties(): \Illuminate\Database\Eloquent\Builder
+    {
+        $query = $this->scopeQuery(Property::query());
+
+        return $this->applyManualFilter(
+            $query,
+            federationId: session('dashboard_filter.federation_id'),
+            districtId: session('dashboard_filter.district_id'),
+            churchId: session('dashboard_filter.church_id'),
+        );
+    }
 
     protected function requiredFields(): array
     {
@@ -28,19 +50,19 @@ class LegalStatusStatsWidget extends BaseWidget
     {
         $fields = $this->requiredFields();
 
-        $enRegle = Property::query();
+        $enRegle = (clone $this->scopedProperties());
         foreach ($fields as $field) {
             $enRegle->whereNotNull($field);
         }
 
-        $nonRenseigne = Property::query();
+        $nonRenseigne = (clone $this->scopedProperties());
         foreach ($fields as $field) {
             $nonRenseigne->whereNull($field);
         }
 
         $enRegleCount = $enRegle->count();
         $nonRenseigneCount = $nonRenseigne->count();
-        $enCoursCount = Property::count() - $enRegleCount - $nonRenseigneCount;
+        $enCoursCount = (clone $this->scopedProperties())->count() - $enRegleCount - $nonRenseigneCount;
 
         return [
             Stat::make('En règle', $enRegleCount)

@@ -12,11 +12,11 @@ use Filament\Widgets\TableWidget as BaseWidget;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ArrayExport;
 
-class ByFederationReportWidget extends BaseWidget{
+class ByDistrictReportWidget extends BaseWidget {
     
     use ScopesPropertiesByUser;
-
-    protected static ?string $heading = 'Patrimoine par Fédération/Mission';
+    
+    protected static ?string $heading = 'Patrimoine par District';
 
     protected function reportQuery(): Builder
     {
@@ -24,9 +24,8 @@ class ByFederationReportWidget extends BaseWidget{
             Property::query()
                 ->join('churches', 'properties.church_id', '=', 'churches.id')
                 ->join('districts', 'churches.district_id', '=', 'districts.id')
-                ->join('federations', 'districts.federation_id', '=', 'federations.id')
-                ->selectRaw('federations.id as id, federations.name as label, count(properties.id) as total')
-                ->groupBy('federations.id', 'federations.name')
+                ->selectRaw('districts.id as id, districts.name as label, count(properties.id) as total')
+                ->groupBy('districts.id', 'districts.name')
         );
     }
 
@@ -48,11 +47,10 @@ class ByFederationReportWidget extends BaseWidget{
                 ->action(function () {
                     $rows = $this->reportQuery()->get()->map(fn ($r) => [$r->label, $r->total])->toArray();
                     return Excel::download(
-                        new ArrayExport($rows, ['Fédération/Mission', 'Total de biens']),
-                        'patrimoine-par-federation.xlsx'
+                        new ArrayExport($rows, ['District', 'Total de biens']),
+                        'patrimoine-par-district.xlsx'
                     );
                 }),
             ]);
     }
 }
-

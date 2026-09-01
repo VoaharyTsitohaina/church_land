@@ -20,4 +20,21 @@ trait ScopesPropertiesByUser
 
         return $query;
     }
+
+    protected function applyManualFilter(
+        Builder $query,
+        ?int $federationId = null,
+        ?int $districtId = null,
+        ?int $churchId = null
+    ): Builder {
+        if ($churchId) {
+            $query->where('church_id', $churchId);
+        } elseif ($districtId) {
+            $query->whereHas('church', fn ($q) => $q->where('district_id', $districtId));
+        } elseif ($federationId) {
+            $query->whereHas('church.district', fn ($q) => $q->where('federation_id', $federationId));
+        }
+ 
+        return $query;
+    }
 }

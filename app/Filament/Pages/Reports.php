@@ -281,6 +281,7 @@ class Reports extends Page
         return [
             \App\Filament\Widgets\ByFederationReportWidget::class,
             \App\Filament\Widgets\ByTypeReportWidget::class,
+            \App\Filament\Widgets\ByDistrictReportWidget::class,
         ];
     }
 }
