@@ -142,14 +142,14 @@ class Reports extends Page
             //     ->groupBy('federations.name')
             //     ->get(),
 
-            'byDistrict' => (clone $this->baseQuery())
-                ->join('churches', 'properties.church_id', '=', 'churches.id')
-                ->join('districts', 'churches.district_id', '=', 'districts.id')
-                ->select('districts.name as label', DB::raw('count(properties.id) as total'))
-                ->groupBy('districts.name')
-                ->get(),
+            // 'byDistrict' => (clone $this->baseQuery())
+            //     ->join('churches', 'properties.church_id', '=', 'churches.id')
+            //     ->join('districts', 'churches.district_id', '=', 'districts.id')
+            //     ->select('districts.name as label', DB::raw('count(properties.id) as total'))
+            //     ->groupBy('districts.name')
+            //     ->get(),
 
-            'byChurch' => $this->byChurchQuery()->paginate(5, ['*'], 'church_page'),
+            // 'byChurch' => $this->byChurchQuery()->paginate(5, ['*'], 'church_page'),
 
             'withoutTitle' => (clone $this->baseQuery())
                 ->whereNull('land_title_number')
@@ -177,13 +177,13 @@ class Reports extends Page
         ];
     }    
             
-    public function byChurchQuery()
-    {
-        return (clone $this->baseQuery())
-            ->join('churches', 'properties.church_id', '=', 'churches.id')
-            ->select('churches.name as label', DB::raw('count(properties.id) as total'))
-            ->groupBy('churches.name');
-    }
+    // public function byChurchQuery()
+    // {
+    //     return (clone $this->baseQuery())
+    //         ->join('churches', 'properties.church_id', '=', 'churches.id')
+    //         ->select('churches.name as label', DB::raw('count(properties.id) as total'))
+    //         ->groupBy('churches.name');
+    // }
 
     // public function exportFederationExcel()
     // {
@@ -282,6 +282,8 @@ class Reports extends Page
             \App\Filament\Widgets\ByFederationReportWidget::class,
             \App\Filament\Widgets\ByTypeReportWidget::class,
             \App\Filament\Widgets\ByDistrictReportWidget::class,
+            \App\Filament\Widgets\ByChurchReportWidget::class,
+            \App\Filament\Widgets\WithoutTitleReport::class,
         ];
     }
 }

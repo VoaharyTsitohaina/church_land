@@ -57,58 +57,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-        {{-- par district --}}
-
-        <x-filament::card>
-            <div class="flex justify-between items-center mb-3">
-                <h3 class="font-semibold">
-                    Patrimoine par district
-                </h3>
-                <x-filament::button size="sm" wire:click="exportDistrictExcel" icon="heroicon-o-arrow-down-tray">
-                    Exporter (Excel)
-                </x-filament::button>
-            </div>
-            <ul class="space-y-1">
-                @forelse ($byDistrict as $district)
-                    <li class="flex justify-between text-sm">
-                        <span>{{ $district->label }}</span>
-                        <span class="font-medium">{{ $district->total }}</span>
-                    </li>
-                @empty
-                    <li class="text-sm text-gray-400">
-                        Aucune donnée
-                    </li>
-                @endforelse
-            </ul>
-        </x-filament::card>
-
-        {{-- par eglise --}}
-
-        <x-filament::card>
-            <div class="flex justify-between items-center mb-3">
-                <h3 class="font-semibold">
-                    Patrimoine par église
-                </h3>
-                <x-filament::button size="sm" wire:click="exportChurchExcel" icon="heroicon-o-arrow-down-tray">
-                    Exporter (Excel)
-                </x-filament::button>
-            </div>
-            <ul class="space-y-1">
-                @forelse ($byChurch as $church)
-                    <li class="flex justify-between text-sm">
-                        <span>{{ $church->label }}</span>
-                        <span class="font-medium">{{ $church->total }}</span>
-                    </li>
-                @empty
-                    <li class="text-sm text-gray-400">
-                        Aucune donnée
-                    </li>
-                @endforelse
-            </ul>
-            <div class="mt-3">
-                {{ $byChurch->links(data: ['scrollTo' => false]) }}
-            </div>
-        </x-filament::card>
+        
         
 
     </div>

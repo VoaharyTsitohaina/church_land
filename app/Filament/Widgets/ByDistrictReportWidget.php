@@ -34,7 +34,7 @@ class ByDistrictReportWidget extends BaseWidget {
         return $table
             ->query($this->reportQuery())
             ->columns([
-                TextColumn::make('label')->label('Federation'),
+                TextColumn::make('label')->label('District'),
                 TextColumn::make('total')->label('Nombre de bien')->sortable(),
             ])
             ->defaultSort('total', 'desc')
