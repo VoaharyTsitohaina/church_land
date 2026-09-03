@@ -2,35 +2,54 @@
 
 namespace App\Filament\Widgets;
 
-use App\Exports\ArrayExport;
-use App\Filament\Concerns\ScopesPropertiesByUser;
 use App\Models\Property;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Table;
-use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\HtmlString;
+use Filament\Tables\Table;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Actions\Action;
 use Maatwebsite\Excel\Facades\Excel;
+use Filament\Widgets\TableWidget as BaseWidget;
+use App\Filament\Concerns\ScopesPropertiesByUser;
+use App\Exports\PropertiesExport;
 
-class WithoutTitleReport extends BaseWidget {
-
+class MissingDocumentsReportWidget extends BaseWidget
+{
     use ScopesPropertiesByUser;
 
-    protected static ?string $heading = 'Biens sans titre foncier';
+    // protected static ?string $heading = 'Biens avec documents manquants';
 
     protected function reportQuery(): Builder
     {
         return $this->scopeQuery(
             Property::query()
-                ->whereNull('land_title_number')
+                ->where(function ($query) {
+                    $query->whereDoesntHave('media');
+                })
                 ->with('church')
         );
     }
+
+    protected function getHeading(): string
+    {
+        $total = $this->reportQuery()->count();
+
+        return "Biens avec documents manquants ({$total})";
+    }
+    
 
     public function table(Table $table): Table
     {
         return $table
             ->query($this->reportQuery())
+            ->heading(fn () => new HtmlString(
+                '<div class="flex items-center gap-2">
+                    <span>Biens avec documents manquants</span>
+                    <x-filament::badge color="danger">
+                        ' . $this->reportQuery()->count() . '
+                    </x-filament::badge>
+                </div>'
+            ))
             ->columns([
                 TextColumn::make('reference')
                     ->searchable(),
@@ -53,11 +72,10 @@ class WithoutTitleReport extends BaseWidget {
                     ->label('Exporter')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->action(function () {
-                        $rows = $this->reportQuery()->get()->map(fn ($r) => [$r->total])->toArray();
                         return Excel::download(
-                            new ArrayExport($rows, ['Total de biens']),
-                            'biens-sans-titre-foncier.xlsx'
-                        );
+                            new PropertiesExport($this->reportQuery()),
+                            'biens-avec-documents-manquants.xlsx'
+                        ); 
                     }),
             ]);
     }
