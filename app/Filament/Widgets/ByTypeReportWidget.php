@@ -11,16 +11,23 @@ use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Facades\Excel;
+use Livewire\Attributes\On;
 
 class ByTypeReportWidget extends BaseWidget {
 
     use ScopesPropertiesByUser;
 
+    #[On('reports-filter-updated')]
+    public function refresh(): void
+    {
+        // vide : force Livewire à relire la session au re-render
+    }
+
     protected static ?string $heading = 'Répartition par type de bien';
 
     protected function reportQuery(): Builder
     {
-        return $this->scopeQuery(
+        return $this->scopeQueryWithFilter(
             Property::query()
                 ->join('property_types', 'properties.property_type_id', '=', 'property_types.id')
                 ->selectRaw('property_types.id as id, property_types.name as label, count(properties.id) as total')

@@ -13,8 +13,6 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-
 class ChurchResource extends Resource
 {
     protected static ?string $model = Church::class;

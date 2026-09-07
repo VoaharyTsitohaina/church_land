@@ -11,16 +11,23 @@ use \Maatwebsite\Excel\Facades\Excel;
 use \App\Exports\ArrayExport;
 use Filament\Widgets\TableWidget as BaseWidget;
 use App\Filament\Concerns\ScopesPropertiesByUser;
+use Livewire\Attributes\On;
 
 class ByChurchReportWidget extends BaseWidget
 {
     use ScopesPropertiesByUser;
 
+    #[On('reports-filter-updated')]
+    public function refresh(): void
+    {
+        // vide : force Livewire à relire la session au re-render
+    }
+
     protected static ?string $heading = 'Patrimoine par Eglise';
 
     protected function reportQuery(): Builder
     {
-        return $this->scopeQuery(
+        return $this->scopeQueryWithFilter(
             Property::query()
                 ->join('churches', 'properties.church_id', '=', 'churches.id')
                 ->selectRaw('churches.id as id, churches.name as label, count(properties.id) as total')

@@ -1,12 +1,5 @@
 <x-filament-panels::page>
 
-    {{-- Filtres --}}
-    <x-filament::card class="mb-6">
-        <form wire:submit.prevent>
-            {{ $this->form }}
-        </form>
-    </x-filament::card>
-
     <div class="flex gap-2 mb-6">
         <x-filament::button wire:click="exportAllExcel" icon="heroicon-o-table-cells">
             Exporter tout le patrimoine (Excel)
@@ -47,10 +40,6 @@
             <div>
                 <p class="text-sm text-gray-500">Valeur estimée totale</p>
                 <p class="text-lg font-semibold">{{ number_format($totalValues, 0, ',', ' ') }}</p>
-            </div>
-            <div>
-                <p class="text-sm text-gray-500">Nombre de propriétés sans titre</p>
-                <p class="text-lg font-semibold">{{ $totalPropertiesWithoutTitle }}</p>
             </div>
         </div>
     </x-filament::card>

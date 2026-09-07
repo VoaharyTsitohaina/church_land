@@ -12,6 +12,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use Filament\Widgets\TableWidget as BaseWidget;
 use App\Filament\Concerns\ScopesPropertiesByUser;
 use App\Exports\PropertiesExport;
+use Livewire\Attributes\On;
 
 class MissingDocumentsReportWidget extends BaseWidget
 {
@@ -19,22 +20,21 @@ class MissingDocumentsReportWidget extends BaseWidget
 
     // protected static ?string $heading = 'Biens avec documents manquants';
 
+    #[On('reports-filter-updated')]
+    public function refresh(): void
+    {
+        // vide : force Livewire à relire la session au re-render
+    }
+
     protected function reportQuery(): Builder
     {
-        return $this->scopeQuery(
+        return $this->scopeQueryWithFilter(
             Property::query()
                 ->where(function ($query) {
                     $query->whereDoesntHave('media');
                 })
                 ->with('church')
         );
-    }
-
-    protected function getHeading(): string
-    {
-        $total = $this->reportQuery()->count();
-
-        return "Biens avec documents manquants ({$total})";
     }
     
 

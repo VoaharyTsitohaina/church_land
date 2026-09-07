@@ -2,15 +2,8 @@
 
 namespace App\Filament\Pages;
 
-use App\Models\Church;
-use App\Models\District;
-use App\Models\Federation;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
 use Filament\Pages\Page;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Property;
 use Maatwebsite\Excel\Facades\Excel;
@@ -18,93 +11,21 @@ use App\Exports\ArrayExport;
 use App\Exports\PropertiesExport;
 use Barryvdh\DomPDF\Facade\Pdf;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Livewire\WithPagination;
+use Livewire\Attributes\On;
 
 class Reports extends Page
 {
-    use WithPagination;
     use HasPageShield;
-    use InteractsWithForms;
 
     protected static ?string $navigationLabel = 'Reports';
-
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
-
     protected static string $view = 'filament.pages.reports';
-
     protected static ?string $title = 'Reports';
 
-    public ?int $federation_id = null;
-    public ?int $district_id = null;
-    public ?int $church_id = null;
-
-    public function mount(): void
+    #[On('reports-filter-updated')]
+    public function refresh(): void
     {
-        $user = Auth::user();
-        /** @var \App\Models\User $user */
-
-        if ($user->hasRole('district_manager')) {
-            $this->district_id = $user->district_id;
-        } elseif ($user->hasRole('federation_admin')) {
-            $this->federation_id = $user->federation_id;
-        }
-
-        $this->form->fill([
-            'federation_id' => $this->federation_id,
-            'district_id' => $this->district_id,
-            'church_id' => $this->church_id,
-        ]);
-    }
-
-    public function form(Form $form): Form
-    {
-        $user = Auth::user();
-        /** @var \App\Models\User $user */
-
-        return $form
-            ->schema([
-                Select::make('federation_id')
-                    ->label('Federation')
-                    ->options(Federation::pluck('name', 'id'))
-                    ->searchable()
-                    ->preload()
-                    ->live()
-                    ->afterStateUpdated(function (callable $set) {
-                        $set('district_id', null);
-                        $set('church_id', null);
-                    })
-                    ->visible(fn () => !$user->hasRole(['district_manager', 'federation_admin'])),
-
-                Select::make('district_id')
-                    ->label('District')
-                    ->options(fn (Get $get) => 
-                        District::query()
-                            ->when($get('federation_id'), fn ($query, $federationId) => $query->where('federation_id', $federationId))
-                            ->pluck('name', 'id')
-                    )
-                    ->searchable()
-                    ->preload()
-                    ->live()
-                    ->afterStateUpdated(function (callable $set) {
-                        $set('church_id', null);
-                    })
-                    ->visible(fn () => !$user->hasRole('district_manager')),
-
-                Select::make('church_id')
-                    ->label('Church')
-                    ->options(fn (Get $get) => 
-                        Church::query()
-                            ->when($get('district_id'), fn ($query, $districtId) => $query->where('district_id', $districtId))
-                            ->when(!$get('district_id') && $get('federation_id'), fn ($query) => 
-                                $query->whereHas('district', fn ($q) => $q->where('federation_id', $get('federation_id')))
-                            )
-                            ->pluck('name', 'id')
-                    )
-                    ->searchable()
-                    ->preload()
-                    ->live(),
-            ])->columns(3);
+        // vide : force Livewire à relire la session au re-render
     }
 
     protected function userScope(Builder $query): Builder
@@ -120,15 +41,31 @@ class Reports extends Page
 
         return $query;
     }
-
     protected function baseQuery(): Builder
     {
-        $query = Property::query()
-            ->when($this->church_id, fn ($q) => $q->where('church_id', $this->church_id))
-            ->when($this->district_id && !$this->church_id, fn ($q) => $q->whereHas('church', fn ($q2) => $q2->where('district_id', $this->district_id)))
-            ->when($this->federation_id && !$this->district_id, fn ($q) => $q->whereHas('church.district', fn ($q2) => $q2->where('federation_id', $this->federation_id)));
-
-        return $this->userScope($query);
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $query = Property::query();
+ 
+        if ($user->hasRole('district_manager')) {
+            $query->whereHas('church', fn ($q) => $q->where('district_id', $user->district_id));
+        } elseif ($user->hasRole('federation_admin')) {
+            $query->whereHas('church.district', fn ($q) => $q->where('federation_id', $user->federation_id));
+        }
+ 
+        $churchId = session('reports_filter.church_id');
+        $districtId = session('reports_filter.district_id');
+        $federationId = session('reports_filter.federation_id');
+ 
+        if ($churchId) {
+            $query->where('church_id', $churchId);
+        } elseif ($districtId) {
+            $query->whereHas('church', fn ($q) => $q->where('district_id', $districtId));
+        } elseif ($federationId) {
+            $query->whereHas('church.district', fn ($q) => $q->where('federation_id', $federationId));
+        }
+ 
+        return $query;
     }
 
     public function getViewData(): array
@@ -210,6 +147,13 @@ class Reports extends Page
         return response()->streamDownload(
             fn () => print(Pdf::loadView('reports.patrimoine', $data)->output()), 'rapport-patrimoine.pdf'
         );
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            \App\Filament\Widgets\ReportsFilterWidget::class,
+        ];
     }
 
     protected function getFooterWidgets(): array

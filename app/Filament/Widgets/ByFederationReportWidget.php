@@ -11,6 +11,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ArrayExport;
+use Livewire\Attributes\On;
 
 class ByFederationReportWidget extends BaseWidget{
     
@@ -18,9 +19,15 @@ class ByFederationReportWidget extends BaseWidget{
 
     protected static ?string $heading = 'Patrimoine par Fédération/Mission';
 
+    #[On('reports-filter-updated')]
+    public function refresh(): void
+    {
+        // vide : force Livewire à relire la session au re-render
+    }
+
     protected function reportQuery(): Builder
     {
-        return $this->scopeQuery(
+        return $this->scopeQueryWithFilter(
             Property::query()
                 ->join('churches', 'properties.church_id', '=', 'churches.id')
                 ->join('districts', 'churches.district_id', '=', 'districts.id')

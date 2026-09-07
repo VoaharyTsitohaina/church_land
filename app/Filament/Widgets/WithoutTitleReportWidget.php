@@ -12,6 +12,7 @@ use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PropertiesExport;
+use Livewire\Attributes\On;
 
 class WithoutTitleReportWidget extends BaseWidget {
 
@@ -19,9 +20,15 @@ class WithoutTitleReportWidget extends BaseWidget {
 
     protected static ?string $heading = 'Biens sans titre foncier';
 
+    #[On('reports-filter-updated')]
+    public function refresh(): void
+    {
+        // vide : force Livewire à relire la session au re-render
+    }
+
     protected function reportQuery(): Builder
     {
-        return $this->scopeQuery(
+        return $this->scopeQueryWithFilter(
             Property::query()
                 ->whereNull('land_title_number')
                 ->with('church')

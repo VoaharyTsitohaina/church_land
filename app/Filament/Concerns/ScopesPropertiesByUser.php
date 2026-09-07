@@ -37,4 +37,17 @@ trait ScopesPropertiesByUser
  
         return $query;
     }
+
+    protected function scopeQueryWithFilter(Builder $query): Builder
+    {
+        $query = $this->scopeQuery($query);
+ 
+        return $this->applyManualFilter(
+            $query,
+            federationId: session('reports_filter.federation_id'),
+            districtId: session('reports_filter.district_id'),
+            churchId: session('reports_filter.church_id'),
+        );
+    }
+    
 }
