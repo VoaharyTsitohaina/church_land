@@ -7,6 +7,7 @@ use App\Filament\Widgets\LandTitleStatsWidget;
 use App\Filament\Widgets\LegalStatusStatsWidget;
 use App\Filament\Widgets\OrganizationStatsWidget;
 use Filament\Pages\Dashboard as BasePage;
+use App\Filament\Widgets\DocumentCompletionChartWidget;
 use Override;
 
 class Dashboard extends BasePage
@@ -19,6 +20,7 @@ class Dashboard extends BasePage
             OrganizationStatsWidget::class,
             LandTitleStatsWidget::class,
             LegalStatusStatsWidget::class,
+            DocumentCompletionChartWidget::class,
         ];
     }
 }
