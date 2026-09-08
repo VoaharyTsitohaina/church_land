@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ChurchResource\Pages;
-use App\Filament\Resources\ChurchResource\RelationManagers;
 use App\Models\Church;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -43,6 +42,10 @@ class ChurchResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('district.name')
                     ->label('District')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('district.federation.name')
+                    ->label('Federation')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
@@ -93,7 +96,9 @@ class ChurchResource extends Resource
         if ($user->hasRole('district_manager')) {
             $query->where('district_id', $user->district_id);
         } elseif ($user->hasRole('federation_admin')) {
-            $query->where('federation_id', $user->federation_id);
+            $query->whereHas('district', function (Builder $q) use ($user) {
+                $q->where('federation_id', $user->federation_id);
+            });
         }
 
         return $query;

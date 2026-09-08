@@ -20,10 +20,11 @@ class MissingDocumentsReportWidget extends BaseWidget
 
     // protected static ?string $heading = 'Biens avec documents manquants';
 
+    // Écoute l'événement sans méthode vide qui court-circuite le cycle de vie du TableWidget
     #[On('reports-filter-updated')]
-    public function refresh(): void
+    public function updateFilter(): void
     {
-        // vide : force Livewire à relire la session au re-render
+        $this->resetTable();
     }
 
     protected function reportQuery(): Builder

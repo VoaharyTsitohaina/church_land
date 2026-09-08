@@ -20,7 +20,7 @@ class ByTypeReportWidget extends BaseWidget {
     #[On('reports-filter-updated')]
     public function refresh(): void
     {
-        // vide : force Livewire à relire la session au re-render
+        $this->resetTable();
     }
 
     protected static ?string $heading = 'Répartition par type de bien';

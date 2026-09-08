@@ -22,7 +22,7 @@ class ByDistrictReportWidget extends BaseWidget {
     #[On('reports-filter-updated')]
     public function refresh(): void
     {
-        // vide : force Livewire à relire la session au re-render
+        $this->resetTable();
     }
 
     protected function reportQuery(): Builder
