@@ -29,6 +29,10 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->favicon(asset('sgfeNoBackground.png'))
+            ->brandLogo(fn() => view('filament.brand-logo'))
+            ->brandLogoHeight('auto')
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->login()
             ->colors([
                 'primary' => Color::hex('#315585'),
