@@ -12,6 +12,7 @@ use Filament\Widgets\TableWidget as BaseWidget;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ArrayExport;
 use Livewire\Attributes\On;
+use App\Exports\PropertiesExport;
 
 class ByDistrictReportWidget extends BaseWidget {
     
@@ -36,6 +37,19 @@ class ByDistrictReportWidget extends BaseWidget {
         );
     }
 
+    protected function detailedQuery(): Builder
+    {
+        return $this->scopeQueryWithFilter(
+            Property::query()
+                ->join('churches', 'properties.church_id', '=', 'churches.id')
+                ->join('districts', 'churches.district_id', '=', 'districts.id')
+                ->select('properties.*')
+                ->orderBy('districts.name')
+                ->orderBy('churches.name')
+                ->orderBy('properties.name')
+        )->with(['church.district.federation', 'type']);
+    }
+
     public function table(Table $table): Table
     {
         return $table
@@ -48,16 +62,13 @@ class ByDistrictReportWidget extends BaseWidget {
             ->paginated([5, 10, 25])
             ->defaultPaginationPageOption(5)
             ->headerActions([
-            Action::make('export')
-                ->label('Exporter')
-                ->icon('heroicon-o-arrow-down-tray')
-                ->action(function () {
-                    $rows = $this->reportQuery()->get()->map(fn ($r) => [$r->label, $r->total])->toArray();
-                    return Excel::download(
-                        new ArrayExport($rows, ['District', 'Total de biens']),
-                        'patrimoine-par-district.xlsx'
-                    );
-                }),
+            Action::make('exportDetailed')
+                ->label('Exporter la liste détaillée')
+                ->icon('heroicon-o-document-text')
+                ->action(fn () => Excel::download(
+                    new PropertiesExport($this->detailedQuery()),
+                    'patrimoine-par-district-detaille.xlsx'
+                )),
             ]);
     }
 }

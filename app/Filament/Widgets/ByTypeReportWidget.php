@@ -12,6 +12,7 @@ use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Facades\Excel;
 use Livewire\Attributes\On;
+use App\Exports\PropertiesExport;
 
 class ByTypeReportWidget extends BaseWidget {
 
@@ -35,6 +36,23 @@ class ByTypeReportWidget extends BaseWidget {
         );
     }
 
+    protected function detailedQuery(): Builder
+    {
+        return $this->scopeQueryWithFilter(
+            Property::query()
+                ->join('property_types', 'properties.property_type_id', '=', 'property_types.id')
+                ->join('churches', 'properties.church_id', '=', 'churches.id')
+                ->join('districts', 'churches.district_id', '=', 'districts.id')
+                ->join('federations', 'districts.federation_id', '=', 'federations.id')
+                ->select('properties.*')
+                ->orderBy('property_types.name')
+                ->orderBy('federations.name')
+                ->orderBy('districts.name')
+                ->orderBy('churches.name')
+                ->orderBy('properties.name')
+        )->with(['church.district.federation', 'type']);
+    }
+
     public function table(Table $table): Table
     {
         return $table
@@ -51,16 +69,14 @@ class ByTypeReportWidget extends BaseWidget {
             ->paginated([5, 10, 25])
             ->defaultPaginationPageOption(5)
             ->headerActions([
-            Action::make('export')
-                ->label('Exporter')
-                ->icon('heroicon-o-arrow-down-tray')
-                ->action(function () {
-                    $rows = $this->reportQuery()->get()->map(fn ($r) => [$r->label, $r->total])->toArray();
-                    return Excel::download(
-                        new ArrayExport($rows, ['Type de bien', 'Total de biens']),
-                        'patrimoine-par-type.xlsx'
-                    );
-                }),
+
+            Action::make('exportDetailed')
+                    ->label('Exporter la liste détaillée')
+                    ->icon('heroicon-o-document-text')
+                    ->action(fn () => Excel::download(
+                        new PropertiesExport($this->detailedQuery()),
+                        'patrimoine-par-type-detaille.xlsx'
+                    )),
             ]);
     }
 }

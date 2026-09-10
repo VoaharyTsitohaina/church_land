@@ -11,6 +11,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ArrayExport;
+use App\Exports\PropertiesExport;
 use Livewire\Attributes\On;
 
 class ByFederationReportWidget extends BaseWidget{
@@ -37,6 +38,21 @@ class ByFederationReportWidget extends BaseWidget{
         );
     }
 
+    protected function detailedQuery(): Builder
+    {
+        return $this->scopeQueryWithFilter(
+            Property::query()
+                ->join('churches', 'properties.church_id', '=', 'churches.id')
+                ->join('districts', 'churches.district_id', '=', 'districts.id')
+                ->join('federations', 'districts.federation_id', '=', 'federations.id')
+                ->select('properties.*')
+                ->orderBy('federations.name')
+                ->orderBy('districts.name')
+                ->orderBy('churches.name')
+                ->orderBy('properties.name')
+        )->with(['church.district.federation', 'type']);
+    }
+
     public function table(Table $table): Table
     {
         return $table
@@ -49,16 +65,13 @@ class ByFederationReportWidget extends BaseWidget{
             ->paginated([5, 10, 25])
             ->defaultPaginationPageOption(5)
             ->headerActions([
-            Action::make('export')
-                ->label('Exporter')
-                ->icon('heroicon-o-arrow-down-tray')
-                ->action(function () {
-                    $rows = $this->reportQuery()->get()->map(fn ($r) => [$r->label, $r->total])->toArray();
-                    return Excel::download(
-                        new ArrayExport($rows, ['Fédération/Mission', 'Total de biens']),
-                        'patrimoine-par-federation.xlsx'
-                    );
-                }),
+            Action::make('exportDetailed')
+                    ->label('Exporter la liste détaillée')
+                    ->icon('heroicon-o-document-text')
+                    ->action(fn () => Excel::download(
+                        new PropertiesExport($this->detailedQuery()),
+                        'patrimoine-par-federation-detaille.xlsx'
+                    )),
             ]);
     }
 }

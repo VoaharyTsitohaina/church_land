@@ -158,22 +158,20 @@ class PropertyResource extends Resource
                             ->label('Name'),
                         TextEntry::make('type.name')
                             ->label('Type'),
-                        
-                        
-                        TextEntry::make('estimated_value')
-                            ->label('Estimated Value'),
-                        TextEntry::make('current_value')
-                            ->label('Current Value'),
                     ])->columns(3),
 
                 Section::make('Localisation')
                     ->schema([
+                        TextEntry::make('federation.name')
+                            ->label('Fédération'),
+                        TextEntry::make('district.name')
+                            ->label('District'),
                         TextEntry::make('church.name')
                             ->label('Église'),
                         TextEntry::make('region')
-                            ->label('Region'),
+                            ->label('Région'),
                         TextEntry::make('admin_district')
-                            ->label('Admin District'),
+                            ->label('District administratif '),
                         TextEntry::make('commune')
                             ->label('Commune'),
                         TextEntry::make('fokontany')
@@ -201,24 +199,28 @@ class PropertyResource extends Resource
                         TextEntry::make('area')
                             ->label('Superficie (m²)'),
                         TextEntry::make('land_title_number')
-                            ->label('Land Title Number'),
+                            ->label('Numéro du titre foncier'),
                         TextEntry::make('cadastral_number')
-                            ->label('Cadastral Number'),
+                            ->label('Numéro cadastral'),
                         TextEntry::make('legal_status')
-                            ->label('Legal Status'),
+                            ->label('Statut juridique'),
                         TextEntry::make('acquisition_mode')
-                            ->label('Acquisition Mode'),
+                            ->label('Mode d\'acquisition'),
                         TextEntry::make('acquisition_date')
                             ->dateTime()
-                            ->label('Acquisition Date'),
+                            ->label('Date d\'acquisition'),
+                        TextEntry::make('estimated_value')
+                            ->label('Valeur estimée'),
                     ])->columns(3),
 
                 Section::make('Observations')
                     ->schema([
+                        TextEntry::make('current_value')
+                            ->label('Utilisation actuelle'),
                         TextEntry::make('observations')
                             ->label('Observations'),
                         TextEntry::make('history')
-                            ->label('History'),
+                            ->label('Historique'),
                     ])->columns(2),
 
                 Section::make('Documents')
@@ -305,45 +307,57 @@ class PropertyResource extends Resource
                 Tables\Columns\TextColumn::make('church.name')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('region')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('admin_district')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('commune')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('fokontany')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('address')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('latitude')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('longitude')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('area')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('land_title_number')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('cadastral_number')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('legal_status')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('acquisition_mode')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('acquisition_date')
-                    ->date()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('estimated_value')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('current_value')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('creator.name')
+                Tables\Columns\TextColumn::make('church.district.name')
+                    ->label('District')
                     ->searchable()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('church.district.federation.name')
+                    ->label('Federation')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('region')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('admin_district')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('commune')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('fokontany')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('address')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('area')
+                    ->numeric()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('land_title_number')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('cadastral_number')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('legal_status')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('acquisition_date')
+                    ->date()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('estimated_value')
+                    ->numeric()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('current_value')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('creator.name')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

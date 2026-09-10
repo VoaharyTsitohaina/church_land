@@ -32,14 +32,14 @@ class Property extends Model implements HasMedia
   }
 
   public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()->logOnlyDirty()->logAll()
-        ->useLogName('property')
-        ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
-            'created' => 'Bien créé',
-            'updated' => 'Bien modifié',
-            'deleted' => 'Bien supprimé',
-            default => "Bien {$eventName}",
-        });
-    }
+  {
+      return LogOptions::defaults()->logOnlyDirty()->logAll()
+      ->useLogName('property')
+      ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+          'created' => 'Bien créé',
+          'updated' => 'Bien modifié',
+          'deleted' => 'Bien supprimé',
+          default => "Bien {$eventName}",
+       });
+  }
 }

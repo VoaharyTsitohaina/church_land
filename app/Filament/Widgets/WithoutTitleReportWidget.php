@@ -10,6 +10,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\HtmlString;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PropertiesExport;
 use Livewire\Attributes\On;
@@ -17,8 +18,6 @@ use Livewire\Attributes\On;
 class WithoutTitleReportWidget extends BaseWidget {
 
     use ScopesPropertiesByUser;
-
-    protected static ?string $heading = 'Biens sans titre foncier';
 
     #[On('reports-filter-updated')]
     public function refresh(): void
@@ -39,6 +38,14 @@ class WithoutTitleReportWidget extends BaseWidget {
     {
         return $table
             ->query($this->reportQuery())
+            ->heading(fn () => new HtmlString(
+                '<div class="flex items-center gap-2">
+                    <span>Biens sans titre foncier</span>
+                    <x-filament::badge color="danger">
+                        ' . $this->reportQuery()->count() . '
+                    </x-filament::badge>
+                </div>'
+            ))
             ->columns([
                 TextColumn::make('reference')
                     ->searchable(),
@@ -61,7 +68,6 @@ class WithoutTitleReportWidget extends BaseWidget {
                     ->label('Exporter')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->action(function () {
-                        $rows = $this->reportQuery()->get()->map(fn ($r) => [$r->total])->toArray();
                         return Excel::download(
                             new PropertiesExport($this->reportQuery()),
                         'biens-sans-titre.xlsx'

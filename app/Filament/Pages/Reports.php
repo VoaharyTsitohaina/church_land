@@ -41,6 +41,7 @@ class Reports extends Page
 
         return $query;
     }
+    
     protected function baseQuery(): Builder
     {
         /** @var \App\Models\User $user */

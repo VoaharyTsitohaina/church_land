@@ -18,9 +18,6 @@ class MissingDocumentsReportWidget extends BaseWidget
 {
     use ScopesPropertiesByUser;
 
-    // protected static ?string $heading = 'Biens avec documents manquants';
-
-    // Écoute l'événement sans méthode vide qui court-circuite le cycle de vie du TableWidget
     #[On('reports-filter-updated')]
     public function updateFilter(): void
     {
@@ -38,7 +35,6 @@ class MissingDocumentsReportWidget extends BaseWidget
         );
     }
     
-
     public function table(Table $table): Table
     {
         return $table

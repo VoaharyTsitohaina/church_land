@@ -12,6 +12,7 @@ use \App\Exports\ArrayExport;
 use Filament\Widgets\TableWidget as BaseWidget;
 use App\Filament\Concerns\ScopesPropertiesByUser;
 use Livewire\Attributes\On;
+use App\Exports\PropertiesExport;
 
 class ByChurchReportWidget extends BaseWidget
 {
@@ -33,6 +34,17 @@ class ByChurchReportWidget extends BaseWidget
                 ->selectRaw('churches.id as id, churches.name as label, count(properties.id) as total')
                 ->groupBy('churches.id', 'churches.name')
         );
+    }
+
+    protected function detailedQuery(): Builder
+    {
+        return $this->scopeQueryWithFilter(
+            Property::query()
+                ->join('churches', 'properties.church_id', '=', 'churches.id')
+                ->select('properties.*')
+                ->orderBy('churches.name')
+                ->orderBy('properties.name')
+        )->with(['church.district.federation', 'type']);
     }
 
     public function table(Table $table): Table
@@ -57,6 +69,14 @@ class ByChurchReportWidget extends BaseWidget
                             'patrimoine-par-eglise.xlsx'
                         );
                     }),
+
+                Action::make('exportDetailed')
+                    ->label('Exporter la liste détaillée')
+                    ->icon('heroicon-o-document-text')
+                    ->action(fn () => Excel::download(
+                        new PropertiesExport($this->detailedQuery()),
+                        'patrimoine-par-eglise-detaille.xlsx'
+                    )),
             ]);
     }
 }
