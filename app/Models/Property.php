@@ -32,14 +32,25 @@ class Property extends Model implements HasMedia
   }
 
   public function getActivitylogOptions(): LogOptions
-  {
-      return LogOptions::defaults()->logOnlyDirty()->logAll()
-      ->useLogName('property')
-      ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+    {
+      return LogOptions::defaults()
+        ->logOnly([
+          'reference', 'name', 'property_type_id', 'church_id',
+          'area', 'land_title_number', 'cadastral_number',
+          'legal_status', 'acquisition_mode', 'acquisition_date',
+          'estimated_value', 'current_use', 'observations', 'history',
+          'region', 'admin_district', 'commune', 'fokontany', 'address',
+          'latitude', 'longitude', 'created_by'
+        ])
+        ->logOnlyDirty()
+        ->dontSubmitEmptyLogs()
+          // <- règle le point 5 : un simple update_at qui bouge tout seul ne compte plus
+        ->dontLogIfAttributesChangedOnly(['updated_at'])
+        ->setDescriptionForEvent(fn (string $eventName) => match ($eventName) {
           'created' => 'Bien créé',
           'updated' => 'Bien modifié',
           'deleted' => 'Bien supprimé',
-          default => "Bien {$eventName}",
-       });
-  }
+          default => $eventName,
+        });
+    }
 }

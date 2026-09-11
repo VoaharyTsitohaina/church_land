@@ -38,7 +38,7 @@ return new class extends Migration
             $table->decimal('estimated_value', 15, 2)->nullable(); // valeur estimée en Ariary
 
             // Description
-            $table->string('current_value')->nullable();
+            $table->string('current_use')->nullable();
             $table->text('observations')->nullable();
             $table->text('history')->nullable();
 

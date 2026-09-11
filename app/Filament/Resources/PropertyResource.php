@@ -94,7 +94,7 @@ class PropertyResource extends Resource
                 Forms\Components\TextInput::make('estimated_value')
                     ->numeric()
                     ->default(null),
-                Forms\Components\TextInput::make('current_value')
+                Forms\Components\TextInput::make('current_use')
                     ->maxLength(255)
                     ->default(null),
                 Forms\Components\Textarea::make('observations')
@@ -215,7 +215,7 @@ class PropertyResource extends Resource
 
                 Section::make('Observations')
                     ->schema([
-                        TextEntry::make('current_value')
+                        TextEntry::make('current_use')
                             ->label('Utilisation actuelle'),
                         TextEntry::make('observations')
                             ->label('Observations'),
@@ -298,13 +298,17 @@ class PropertyResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('reference')
+                    ->label('Référence')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('name')
+                    ->label('Nom')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('type.name')
+                    ->label('Type')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('church.name')
+                    ->label('Église')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('church.district.name')
@@ -312,64 +316,80 @@ class PropertyResource extends Resource
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('church.district.federation.name')
-                    ->label('Federation')
+                    ->label('Fédération')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('region')
+                    ->label('Région')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('admin_district')
+                    ->label('District administratif')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('commune')
+                    ->label('Commune')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('fokontany')
+                    ->label('Fokontany')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('address')
-                    ->searchable(),
+                    ->label('Adresse')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('area')
+                    ->label('Superficie (m²)')
                     ->numeric()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('land_title_number')
+                    ->label('Numéro de titre foncier')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('cadastral_number')
+                    ->label('Numéro cadastral')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('legal_status')
+                    ->label('Statut juridique')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('acquisition_date')
+                    ->label('Date d\'acquisition')
                     ->date()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('estimated_value')
+                    ->label('Valeur estimée')
                     ->numeric()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('current_value')
+                Tables\Columns\TextColumn::make('current_use')
+                    ->label('Utilisation actuelle')
                     ->searchable()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('creator.name')
+                    ->label('Créé par')
                     ->searchable()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Créé le')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Mis à jour le')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('church_id')
-                    ->label('Church')
+                    ->label('Église')
                     ->relationship('church', 'name'),
                 Tables\Filters\SelectFilter::make('property_type_id')
                     ->label('Type')
