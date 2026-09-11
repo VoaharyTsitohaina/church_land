@@ -8,6 +8,7 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\Activitylog\Models\Activity;
 
 class Property extends Model implements HasMedia
 {
@@ -40,17 +41,44 @@ class Property extends Model implements HasMedia
           'legal_status', 'acquisition_mode', 'acquisition_date',
           'estimated_value', 'current_use', 'observations', 'history',
           'region', 'admin_district', 'commune', 'fokontany', 'address',
-          'latitude', 'longitude', 'created_by'
+          'latitude', 'longitude'
         ])
         ->logOnlyDirty()
         ->dontSubmitEmptyLogs()
-          // <- règle le point 5 : un simple update_at qui bouge tout seul ne compte plus
         ->dontLogIfAttributesChangedOnly(['updated_at'])
         ->setDescriptionForEvent(fn (string $eventName) => match ($eventName) {
-          'created' => 'Bien créé',
-          'updated' => 'Bien modifié',
-          'deleted' => 'Bien supprimé',
+          'created' => "Bien créé : {$this->type->name} - {$this->name} - {$this->church->name} - district {$this->church->district->name} - {$this->church->district->federation->name}",
+          'updated' => "Bien modifié : {$this->type->name} - {$this->name} - {$this->church->name} - district {$this->church->district->name} - {$this->church->district->federation->name}",
+          'deleted' => "Bien supprimé : {$this->type->name} - {$this->name} - {$this->church->name} - district {$this->church->district->name} - {$this->church->district->federation->name}",
           default => $eventName,
         });
+    }
+
+    public function tapActivity(Activity $activity, string $eventName): void
+    {
+      $properties = $activity->properties->toArray();
+
+      foreach (['attributes', 'old'] as $section) {
+        if (!isset($properties[$section])) {
+            continue;
+        }
+
+        if (array_key_exists('property_type_id', $properties[$section])) {
+            $id = $properties[$section]['property_type_id'];
+            $properties[$section]['type'] = $id
+                ? PropertyType::find($id)?->name
+                : null;
+            unset($properties[$section]['property_type_id']);
+        }
+        if (array_key_exists('church_id', $properties[$section])) {
+            $id = $properties[$section]['church_id'];
+            $properties[$section]['church'] = $id
+                ? Church::find($id)?->name
+                : null;
+            unset($properties[$section]['church_id']);
+        }
+    }
+
+      $activity->properties = $properties;
     }
 }

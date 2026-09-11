@@ -56,7 +56,33 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->plugins([
                 FilamentShieldPlugin::make(),
-                ActivitylogPlugin::make(),
+                ActivitylogPlugin::make()
+                    ->translateLogKey(fn (string $key) => match ($key) {
+                        'type' => 'Type',
+                        'church' => 'Église',
+                        'reference' => 'Référence',
+                        'name' => 'Nom',
+                        'area' => 'Superficie',
+                        'land_title_number' => 'Titre foncier',
+                        'cadastral_number' => 'Numéro cadastral',
+                        'legal_status' => 'Statut juridique',
+                        'acquisition_mode' => "Mode d'acquisition",
+                        'acquisition_date' => "Date d'acquisition",
+                        'estimated_value' => 'Valeur estimée',
+                        'current_use' => 'Utilisation actuelle',
+                        'observations' => 'Observations',
+                        'history' => 'Historique',
+                        default => $key,
+                    })
+                    ->translateSubject(fn (string $subject) => match ($subject) {
+                        'Property' => 'Bien',
+                        'Church' => 'Église',
+                        'District' => 'District',
+                        'Federation' => 'Fédération',
+                        'User' => 'Utilisateur',
+                        'PropertyType' => 'Type de bien',
+                        default => $subject,
+                    }),
             ])
             ->authMiddleware([
                 Authenticate::class,

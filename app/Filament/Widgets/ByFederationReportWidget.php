@@ -66,8 +66,8 @@ class ByFederationReportWidget extends BaseWidget{
             ->defaultPaginationPageOption(5)
             ->headerActions([
             Action::make('exportDetailed')
-                    ->label('Exporter la liste détaillée')
-                    ->icon('heroicon-o-document-text')
+                    ->label('Exporter')
+                    ->icon('heroicon-o-arrow-down-tray')
                     ->action(fn () => Excel::download(
                         new PropertiesExport($this->detailedQuery()),
                         'patrimoine-par-federation-detaille.xlsx'
