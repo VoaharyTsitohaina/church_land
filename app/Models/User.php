@@ -55,6 +55,17 @@ class User extends Authenticatable
 
     public function getActivitylogOptions(): LogOptions
     {
-        return LogOptions::defaults()->logOnlyDirty()->logAll();
+        return LogOptions::defaults()
+            ->logOnly(['name', 'email', 'password', 'federation_id', 'district_id'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->dontLogIfAttributesChangedOnly(['updated_at'])
+            ->setDescriptionForEvent(fn (string $eventName) => match ($eventName) {
+                'created' => "Utilisateur créé : {$this->name} - {$this->email}",
+                'updated' => "Utilisateur modifié : {$this->name} - {$this->email}",
+                'deleted' => "Utilisateur supprimé : {$this->name} - {$this->email}",
+                default => $eventName,
+            });
     }
+
 }
