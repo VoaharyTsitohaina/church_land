@@ -67,6 +67,7 @@ class UserResource extends Resource
                             ->relationship('federation', 'name')
                             ->preload()
                             ->searchable()
+                            ->live()
                             ->visible(fn (Get $get) => static::roleNeedsScope($get('roles')[0] ?? null))
                             ->default(null),
                         Forms\Components\Select::make('district_id')
@@ -81,6 +82,10 @@ class UserResource extends Resource
                             )
                             ->preload()
                             ->searchable()
+                            ->live()
+                            ->afterStateUpdated(function ($state, Forms\Set $set): void {
+                                $set('federation_id', District::find($state)?->federation_id);
+                            })
                             ->visible(fn (Get $get) => static::roleNeedsScope($get('roles')[0] ?? null, onlyDistrict: true))
                             ->default(null),
                     ]),
