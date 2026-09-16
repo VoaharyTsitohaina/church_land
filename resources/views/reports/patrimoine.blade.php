@@ -1,4 +1,4 @@
-```html
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -72,6 +72,10 @@
 
         <h2>Rapport du patrimoine foncier</h2>
 
+        @if(!empty($scopeLabel))
+            <div class="scope">{{ $scopeLabel }}</div>
+        @endif
+        
         <div class="date">
             Généré le {{ now()->format('d/m/Y') }}
         </div>
@@ -121,4 +125,3 @@
 
 </body>
 </html>
-```

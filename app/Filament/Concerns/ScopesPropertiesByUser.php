@@ -49,5 +49,25 @@ trait ScopesPropertiesByUser
             churchId: session('reports_filter.church_id'),
         );
     }
+
+    protected function currentScopeLabel(): ?string
+    {
+        if ($churchId = session('reports_filter.church_id')) {
+            $church = \App\Models\Church::find($churchId);
+            return $church ? 'Église : ' . $church->name : null;
+        }
+
+        if ($districtId = session('reports_filter.district_id')) {
+            $district = \App\Models\District::find($districtId);
+            return $district ? 'District : ' . $district->name : null;
+        }
+ 
+        if ($federationId = session('reports_filter.federation_id')) {
+            $federation = \App\Models\Federation::find($federationId);
+            return $federation ? 'Fédération : ' . $federation->name : null;
+        }
+ 
+        return null;
+    }
     
 }

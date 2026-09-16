@@ -13,8 +13,7 @@ class LandTitleStatsWidget extends BaseWidget
 {
     use ScopesPropertiesByUser;
 
-    protected static ?string $pollingInterval = null;
-    protected static ?int $sort = 3;
+    protected static ?int $sort = 2;
     protected ?string $heading = 'Informations foncières';
 
     // Recalcule les stats quand le filtre du dashboard change
@@ -42,7 +41,12 @@ class LandTitleStatsWidget extends BaseWidget
             Stat::make('Avec titre foncier', (clone $this->scopedProperties())->whereNotNull('land_title_number')->count())
                 ->description('Biens sécurisés')
                 ->descriptionIcon('heroicon-m-document-check')
-                ->color('success'),
+                ->color('success')
+                ->url(PropertyResource::getUrl('index', [
+                    'tableFilters' => [
+                        'avec_titre' => ['isActive' => true],
+                    ],
+                ])),
 
             Stat::make('Sans titre foncier', (clone $this->scopedProperties())->whereNull('land_title_number')->count())
                 ->description('À régulariser')

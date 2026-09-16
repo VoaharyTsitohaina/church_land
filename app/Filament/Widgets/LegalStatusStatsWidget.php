@@ -12,8 +12,8 @@ class LegalStatusStatsWidget extends BaseWidget
 {
     use ScopesPropertiesByUser;
     // protected static ?string $pollingInterval = null;
-    protected static ?int $sort = 2;
-    protected ?string $heading = "État de complétude des dossiers";
+    protected static ?int $sort = 3;
+    // protected ?string $heading = "État de complétude des dossiers";
 
         // Recalcule les stats quand le filtre du dashboard change
     #[On('dashboard-filter-updated')]

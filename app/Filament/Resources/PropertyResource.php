@@ -395,7 +395,10 @@ class PropertyResource extends Resource
                     ->label('Type')
                     ->relationship('type', 'name'),
                 Tables\Filters\Filter::make('sans_titre')
-                ->query(fn ($query) => $query->whereNull('land_title_number')),
+                ->query(fn ($query) => $query->whereNull('land_title_number'))
+                ,
+                Tables\Filters\Filter::make('avec_titre')
+                ->query(fn ($query) => $query->whereNotNull('land_title_number')),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

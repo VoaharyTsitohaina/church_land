@@ -12,10 +12,11 @@ use App\Exports\PropertiesExport;
 use Barryvdh\DomPDF\Facade\Pdf;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Livewire\Attributes\On;
+use App\Filament\Concerns\ScopesPropertiesByUser;
 
 class Reports extends Page
 {
-    use HasPageShield;
+    use HasPageShield, ScopesPropertiesByUser;
 
     protected static ?string $navigationLabel = 'Reports';
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
@@ -143,6 +144,7 @@ class Reports extends Page
     {
         $data = array_merge($this->getViewData(), [
             'properties' => (clone $this->baseQuery())->with(['church.district.federation', 'type'])->get(),
+            'scopeLabel' => $this->currentScopeLabel(),
         ]);
 
         return response()->streamDownload(
