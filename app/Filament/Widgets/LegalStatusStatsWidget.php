@@ -7,6 +7,7 @@ use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Livewire\Attributes\On;
 use App\Filament\Concerns\ScopesPropertiesByUser;
+use App\Filament\Resources\PropertyResource;
 
 class LegalStatusStatsWidget extends BaseWidget
 {
@@ -68,17 +69,32 @@ class LegalStatusStatsWidget extends BaseWidget
             Stat::make('En règle', $enRegleCount)
                 ->description('Tous les champs obligatoires renseignés')
                 ->descriptionIcon('heroicon-m-check-circle')
-                ->color('success'),
+                ->color('success')
+                ->url(PropertyResource::getUrl('index', [
+                    'tableFilters' => [
+                        'en_regle' => ['isActive' => true],
+                    ],
+                ])),
 
             Stat::make('En cours', $enCoursCount)
                 ->description('Dossier partiellement complété')
                 ->descriptionIcon('heroicon-m-clock')
-                ->color('warning'),
+                ->color('warning')
+                ->url(PropertyResource::getUrl('index', [
+                    'tableFilters' => [
+                        'en_cours' => ['isActive' => true],
+                    ],
+                ])),
 
             Stat::make('Non renseigné', $nonRenseigneCount)
                 ->description('Aucune information foncière saisie')
                 ->descriptionIcon('heroicon-m-x-circle')
-                ->color('danger'),
+                ->color('danger')
+                ->url(PropertyResource::getUrl('index', [
+                    'tableFilters' => [
+                        'non_renseigne' => ['isActive' => true],
+                    ],
+                ])),
         ];
     }
 

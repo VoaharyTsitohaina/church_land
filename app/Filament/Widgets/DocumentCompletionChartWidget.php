@@ -3,7 +3,9 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Property;
+use App\Filament\Resources\PropertyResource;
 use Filament\Widgets\ChartWidget;
+use Filament\Support\RawJs;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
@@ -162,11 +164,46 @@ class DocumentCompletionChartWidget extends ChartWidget
                 ],
             ],
 
-            'labels' => [
-                'En règle',
-                'En cours',
-                'Non renseigné',
-            ],
+            'labels' => ['En règle', 'En cours', 'Non renseigné',],
         ];
+    }
+
+    protected function getOptions(): RawJs
+    {
+        // Même ordre que les labels de getData() : [En règle, En cours, Non renseigné]
+        $urls = [
+            PropertyResource::getUrl('index', ['tableFilters' => ['docs_complete' => ['isActive' => true]]]),
+            PropertyResource::getUrl('index', ['tableFilters' => ['docs_partial' => ['isActive' => true]]]),
+            PropertyResource::getUrl('index', ['tableFilters' => ['docs_missing' => ['isActive' => true]]]),
+        ];
+ 
+        $urlsJs = '[' . implode(',', array_map(
+            fn ($url) => "'" . addslashes($url) . "'",
+            $urls
+        )) . ']';
+ 
+        return RawJs::make(<<<JS
+        {
+            onClick: (event, elements) => {
+                const urls = {$urlsJs};
+                if (elements.length > 0 && urls[elements[0].index]) {
+                    window.location.href = urls[elements[0].index];
+                }
+            },
+            onHover: (event, elements) => {
+                event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+            },
+            plugins: {
+                legend: {
+                    onClick: (event, legendItem) => {
+                        const urls = {$urlsJs};
+                        if (urls[legendItem.index]) {
+                            window.location.href = urls[legendItem.index];
+                        }
+                    }
+                }
+            }
+        }
+        JS);
     }
 }

@@ -25,6 +25,8 @@ use Override;
 use Filament\Infolists\Components\Actions\Action as InfolistAction;
 use Dotswan\MapPicker\Infolists\MapEntry;
 use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
 
 class PropertyResource extends Resource
 {
@@ -130,7 +132,7 @@ class PropertyResource extends Resource
                     ->defaultLocation(latitude: -18.8792, longitude: 47.5079)
                     ->showMarker(true)
                     ->clickable(true)
-                    ->zoom(15)
+                    ->zoom(16)
                     ->afterStateUpdated(function (callable $set, $state) {
                         $set('latitude', $state['lat']);
                         $set('longitude', $state['lng']);
@@ -388,17 +390,76 @@ class PropertyResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('church_id')
+                SelectFilter::make('church_id')
                     ->label('Église')
                     ->relationship('church', 'name'),
-                Tables\Filters\SelectFilter::make('property_type_id')
+                SelectFilter::make('property_type_id')
                     ->label('Type')
                     ->relationship('type', 'name'),
-                Tables\Filters\Filter::make('sans_titre')
-                ->query(fn ($query) => $query->whereNull('land_title_number'))
-                ,
-                Tables\Filters\Filter::make('avec_titre')
-                ->query(fn ($query) => $query->whereNotNull('land_title_number')),
+                Filter::make('sans_titre')
+                    ->query(fn ($query) => $query->whereNull('land_title_number')),
+                Filter::make('avec_titre')
+                    ->query(fn ($query) => $query->whereNotNull('land_title_number')),
+
+                Filter::make('en_regle')
+                    ->label('En règle')
+                    ->query(function (Builder $query) {
+                        foreach (Property::requiredFieldsCompletness() as $field) {
+                            $query->whereNotNull($field);
+                        }
+                        return $query;
+                    }),
+                Filter::make('non_renseigne')
+                    ->label('Non renseigné')
+                    ->query(function (Builder $query) {
+                        foreach (Property::requiredFieldsCompletness() as $field) {
+                            $query->whereNull($field);
+                        }
+                        return $query;
+                    }),
+                Filter::make('en_cours')
+                    ->label('En cours')
+                    ->query(function (Builder $query) {
+                        $fields = Property::requiredFieldsForCompleteness();
+                        return $query
+                            ->where(function ($q) use ($fields) {
+                                foreach ($fields as $field) {
+                                    $q->orWhereNull($field);
+                                }
+                            })
+                            ->where(function ($q) use ($fields) {
+                                foreach ($fields as $field) {
+                                    $q->orWhereNotNull($field);
+                                }
+                            });
+                    }),
+
+                Filter::make('docs_complete')
+                    ->label('Documents complets')
+                    ->query(function (Builder $query) {
+                        return $query
+                            ->whereHas('media', fn ($q) => $q->where('collection_name', 'titre_foncier'))
+                            ->whereHas('media', fn ($q) => $q->where('collection_name', 'plan'))
+                            ->whereHas('media', fn ($q) => $q->where('collection_name', 'acte'))
+                            ->whereHas('media', fn ($q) => $q->where('collection_name', 'photos'));
+                    }),
+                Filter::make('docs_partial')
+                    ->label('Documents incomplets')
+                    ->query(function (Builder $query) {
+                        $collections = ['titre_foncier', 'plan', 'acte', 'photos'];
+                        return $query
+                            ->whereHas('media')
+                            ->where(function ($q) use ($collections) {
+                                foreach ($collections as $collection) {
+                                    $q->orWhereDoesntHave('media', fn ($q2) => $q2->where('collection_name', $collection));
+                                }
+                            });
+                    }),
+                Filter::make('docs_missing')
+                    ->label('Aucun document')
+                    ->query(function (Builder $query) {
+                        return $query->whereDoesntHave('media');
+                    }),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

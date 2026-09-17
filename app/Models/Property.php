@@ -81,4 +81,17 @@ class Property extends Model implements HasMedia
 
       $activity->properties = $properties;
     }
+
+    
+    public static function requiredFieldsForCompleteness(): array
+    {
+        return [
+            'area',
+            'land_title_number',
+            'cadastral_number',
+            'legal_status',
+            'acquisition_mode',
+            'acquisition_date',
+        ];
+    }
 }
