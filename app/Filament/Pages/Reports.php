@@ -80,41 +80,6 @@ class Reports extends Page
             'totalValuedProperties' => (clone $this->baseQuery())->whereNotNull('estimated_value')->count(),
             'totalValues' => (clone $this->baseQuery())->whereNotNull('estimated_value')->sum('estimated_value')
         ];
-    }    
-
-    public function exportDistrictExcel()
-    {
-        $rows = $this->getViewData()['byDistrict']
-            ->map(fn ($r) => [$r->label, $r->total])->toArray();
-        
-        return Excel::download(
-            new ArrayExport($rows, ['District', 'Total de biens']),
-            'patrimoine-par-district.xlsx'
-        );
-    }
-
-    public function exportChurchExcel()
-    {
-        $rows = $this->byChurchQuery()
-            ->get()
-            ->map(fn ($r) => [$r->label, $r->total])->toArray();
-        
-        return Excel::download(
-            new ArrayExport($rows, ['Église', 'Total de biens']),
-            'patrimoine-par-eglise.xlsx'
-        );
-    }
- 
-    public function exportWithoutTitleExcel()
-    {
-        $query = (clone $this->baseQuery())->whereNull('land_title_number');
-        return Excel::download(new PropertiesExport($query), 'biens-sans-titre.xlsx');
-    }
-
-    public function exportMissingDocumentsExcel()
-    {
-        $query = (clone $this->baseQuery())->whereDoesntHave('media');
-        return Excel::download(new PropertiesExport($query), 'biens-sans-documents.xlsx');
     }
 
     public function exportStatsExcel()

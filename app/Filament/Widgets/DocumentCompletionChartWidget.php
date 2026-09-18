@@ -170,7 +170,6 @@ class DocumentCompletionChartWidget extends ChartWidget
 
     protected function getOptions(): RawJs
     {
-        // Même ordre que les labels de getData() : [En règle, En cours, Non renseigné]
         $urls = [
             PropertyResource::getUrl('index', ['tableFilters' => ['docs_complete' => ['isActive' => true]]]),
             PropertyResource::getUrl('index', ['tableFilters' => ['docs_partial' => ['isActive' => true]]]),

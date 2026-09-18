@@ -58,10 +58,7 @@ class LandTitleStatsWidget extends BaseWidget
                     ],
                 ])),
 
-            Stat::make(
-                'Valeur estimée',
-                number_format((clone $this->scopedProperties())->sum('estimated_value'), 0, ',', ' ') . ' Ar'
-            )
+            Stat::make('Valeur estimée', number_format((clone $this->scopedProperties())->sum('estimated_value'), 0, ',', ' ') . ' Ar')
                 ->description('Valeur totale du patrimoine')
                 ->descriptionIcon('heroicon-m-banknotes')
                 ->color('success'),
