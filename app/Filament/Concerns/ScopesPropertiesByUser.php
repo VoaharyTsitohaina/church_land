@@ -4,6 +4,7 @@ namespace App\Filament\Concerns;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 trait ScopesPropertiesByUser
 {
@@ -70,4 +71,17 @@ trait ScopesPropertiesByUser
         return null;
     }
     
+    protected function downloadPropertiesPdf(Builder $query, string $reportTitle, string $filename)
+    {
+        $properties = $query->with(['church.district.federation', 'type'])->get();
+ 
+        return response()->streamDownload(
+            fn () => print(Pdf::loadView('reports.patrimoine', [
+                'properties' => $properties,
+                'reportTitle' => $reportTitle,
+                'scopeLabel' => $this->currentScopeLabel(),
+            ])->output()),
+            $filename
+        );
+    }
 }

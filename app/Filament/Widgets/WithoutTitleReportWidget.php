@@ -65,7 +65,7 @@ class WithoutTitleReportWidget extends BaseWidget {
             ->defaultPaginationPageOption(5)
             ->headerActions([
                 Action::make('export')
-                    ->label('Exporter')
+                    ->label('Exporter Excel')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->action(function () {
                         return Excel::download(
@@ -73,6 +73,15 @@ class WithoutTitleReportWidget extends BaseWidget {
                         'biens-sans-titre.xlsx'
                         );
                     }),
+
+                Action::make('exportPdf')
+                    ->label('Exporter PDF')
+                    ->icon('heroicon-o-printer')
+                    ->action(fn () => $this->downloadPropertiesPdf(
+                        $this->reportQuery(),
+                        'Biens sans titre foncier',
+                        'biens-sans-titre.pdf'
+                    ))
             ]);
     }
 }

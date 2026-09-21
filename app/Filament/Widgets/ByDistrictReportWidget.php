@@ -63,11 +63,19 @@ class ByDistrictReportWidget extends BaseWidget {
             ->defaultPaginationPageOption(5)
             ->headerActions([
             Action::make('exportDetailed')
-                ->label('Exporter')
+                ->label('Exporter Excel')
                 ->icon('heroicon-o-arrow-down-tray')
                 ->action(fn () => Excel::download(
                     new PropertiesExport($this->detailedQuery()),
                     'patrimoine-par-district-detaille.xlsx'
+                )),
+            Action::make('exportPdf')
+                ->label('Exporter PDF')
+                ->icon('heroicon-o-printer')
+                ->action(fn () => $this->downloadPropertiesPdf(
+                    $this->detailedQuery(),
+                    'Patrimoine par District',
+                    'patrimoine-par-district-detaille.pdf'
                 )),
             ]);
     }

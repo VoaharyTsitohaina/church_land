@@ -71,12 +71,21 @@ class ByTypeReportWidget extends BaseWidget {
             ->headerActions([
 
             Action::make('exportDetailed')
-                    ->label('Exporter')
+                    ->label('Exporter Excel')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->action(fn () => Excel::download(
                         new PropertiesExport($this->detailedQuery()),
                         'patrimoine-par-type-detaille.xlsx'
                     )),
+
+            Action::make('exportPdf')
+                ->label('Exporter PDF')
+                ->icon('heroicon-o-printer')
+                ->action(fn () => $this->downloadPropertiesPdf(
+                    $this->detailedQuery(),
+                    'Patrimoine par Type',
+                    'patrimoine-par-type-detaille.pdf'
+                ))
             ]);
     }
 }

@@ -59,24 +59,23 @@ class ByChurchReportWidget extends BaseWidget
             ->paginated([5, 10, 25])
             ->defaultPaginationPageOption(5)
             ->headerActions([
-                Action::make('export')
-                    ->label('Exporter')
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->action(function () {
-                        $rows = $this->reportQuery()->get()->map(fn ($r) => [$r->label, $r->total])->toArray();
-                        return Excel::download(
-                            new ArrayExport($rows, ['Eglise', 'Total de biens']),
-                            'patrimoine-par-eglise.xlsx'
-                        );
-                    }),
 
                 Action::make('exportDetailed')
-                    ->label('Exporter la liste détaillée')
-                    ->icon('heroicon-o-document-text')
+                    ->label('Exporter Excel')
+                    ->icon('heroicon-o-arrow-down-tray')
                     ->action(fn () => Excel::download(
                         new PropertiesExport($this->detailedQuery()),
                         'patrimoine-par-eglise-detaille.xlsx'
                     )),
+
+                Action::make('exportPdf')
+                    ->label('Exporter PDF')
+                    ->icon('heroicon-o-printer')
+                    ->action(fn () => $this->downloadPropertiesPdf(
+                        $this->detailedQuery(),
+                        'Patrimoine par Eglise',
+                        'patrimoine-par-eglise-detaille.pdf'
+                    ))
             ]);
     }
 }

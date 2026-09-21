@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -25,6 +24,13 @@
         h2 {
             margin: 0;
             font-size: 18px;
+        }
+
+        .scope {
+            margin-top: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            color: #333;
         }
 
         .date {
@@ -65,17 +71,17 @@
     @endphp
 
     <div class="header">
-        
+
         <img src="{{ $logoPath }}" alt="SGFE" class="logo">
 
         <img src="{{ $logoPathAdventist }}" alt="Adventist" class="logo">
 
-        <h2>Rapport du patrimoine foncier</h2>
+        <h2>{{ $reportTitle ?? 'Rapport du patrimoine foncier' }}</h2>
 
         @if(!empty($scopeLabel))
             <div class="scope">{{ $scopeLabel }}</div>
         @endif
-        
+
         <div class="date">
             Généré le {{ now()->format('d/m/Y') }}
         </div>

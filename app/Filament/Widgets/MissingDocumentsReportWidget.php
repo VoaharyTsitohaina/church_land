@@ -66,7 +66,7 @@ class MissingDocumentsReportWidget extends BaseWidget
             ->defaultPaginationPageOption(5)
             ->headerActions([
                 Action::make('export')
-                    ->label('Exporter')
+                    ->label('Exporter Excel')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->action(function () {
                         return Excel::download(
@@ -74,6 +74,15 @@ class MissingDocumentsReportWidget extends BaseWidget
                             'biens-avec-documents-manquants.xlsx'
                         ); 
                     }),
+
+                Action::make('exportPdf')
+                    ->label('Exporter PDF')
+                    ->icon('heroicon-o-printer')
+                    ->action(fn () => $this->downloadPropertiesPdf(
+                        $this->reportQuery(),
+                        'Biens avec documents manquants',
+                        'biens-avec-documents-manquants.pdf'
+                    )),
             ]);
     }
 }
