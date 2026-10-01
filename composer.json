@@ -18,6 +18,7 @@
         "maatwebsite/excel": "^3.1",
         "rmsramos/activitylog": "^2.0",
         "spatie/laravel-activitylog": "^4.12",
+        "spatie/laravel-backup": "^9.3",
         "spatie/laravel-medialibrary": "^11.23"
     },
     "require-dev": {
