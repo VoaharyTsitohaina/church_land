@@ -18,6 +18,10 @@ class FederationResource extends Resource
     protected static ?string $model = Federation::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $modelLabel = 'Fédération';
+    protected static ?string $pluralModelLabel = 'Fédérations';
+    protected static ?string $navigationLabel = 'Fédérations';
+    
 
     public static function form(Form $form): Form
     {

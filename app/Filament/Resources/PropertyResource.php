@@ -31,79 +31,100 @@ use Filament\Tables\Filters\Filter;
 class PropertyResource extends Resource
 {
     protected static ?string $model = Property::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $modelLabel = 'Bien';
+    protected static ?string $pluralModelLabel = 'Biens';
+    protected static ?string $navigationLabel = 'Biens';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('reference')
+                    ->label('Référence')
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('name')
+                    ->label('Nom du bien')
                     ->required()
                     ->maxLength(255),
                 Forms\Components\Select::make('property_type_id')
-                    ->label('Property Type')
+                    ->label('Type de bien')
                     ->relationship('type', 'name')
                     ->searchable()
                     ->preload()
                     ->required(),
                 Forms\Components\Select::make('church_id')
-                    ->label('Church')
+                    ->label('Église')
                     ->relationship('church', 'name')
                     ->searchable()
                     ->preload()
                     ->required(),
                 Forms\Components\TextInput::make('region')
+                    ->label('Région')
                     ->maxLength(255)
                     ->default(null),
                 Forms\Components\TextInput::make('admin_district')
+                    ->label('District administratif')
                     ->maxLength(255)
                     ->default(null),
                 Forms\Components\TextInput::make('commune')
+                    ->label('Commune')
                     ->maxLength(255)
                     ->default(null),
                 Forms\Components\TextInput::make('fokontany')
+                    ->label('Fokontany')
                     ->maxLength(255)
                     ->default(null),
                 Forms\Components\TextInput::make('address')
+                    ->label('Adresse')
                     ->maxLength(255)
                     ->default(null),
                 Forms\Components\TextInput::make('latitude')
+                    ->label('Latitude')
                     ->numeric()
                     ->default(null),
                 Forms\Components\TextInput::make('longitude')
+                    ->label('Longitude')
                     ->numeric()
                     ->default(null),
                 Forms\Components\TextInput::make('area')
+                    ->label('Superficie')
                     ->numeric()
                     ->default(null),
                 Forms\Components\TextInput::make('land_title_number')
+                    ->label('Numéro de titre foncier')
                     ->maxLength(255)
                     ->default(null),
                 Forms\Components\TextInput::make('cadastral_number')
+                    ->label('Numéro cadastral')
                     ->maxLength(255)
                     ->default(null),
                 Forms\Components\TextInput::make('legal_status')
+                    ->label('Statut juridique')
                     ->maxLength(255)
                     ->default(null),
                 Forms\Components\TextInput::make('acquisition_mode')
+                    ->label("Mode d'acquisition")
                     ->maxLength(255)
                     ->default(null),
                 Forms\Components\DatePicker::make('acquisition_date'),
                 Forms\Components\TextInput::make('estimated_value')
+                    ->label('Valeur estimée')
                     ->numeric()
                     ->default(null),
                 Forms\Components\TextInput::make('current_use')
+                    ->label('Utilisation actuelle')
                     ->maxLength(255)
                     ->default(null),
                 Forms\Components\Textarea::make('observations')
+                    ->label('Observations')
                     ->columnSpanFull(),
                 Forms\Components\Textarea::make('history')
+                    ->label('Historique')
                     ->columnSpanFull(),
                 Forms\Components\TextInput::make('created_by')
+                    ->label('Créé par')
                     ->default(fn () => Auth::user()->name)
                     ->disabled()
                     ->dehydrated(false),

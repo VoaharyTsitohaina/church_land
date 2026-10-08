@@ -15,8 +15,10 @@ use Illuminate\Support\Facades\Auth;
 class ChurchResource extends Resource
 {
     protected static ?string $model = Church::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $modelLabel = 'Église';
+    protected static ?string $pluralModelLabel = 'Églises';
+    protected static ?string $navigationLabel = 'Églises';
 
     public static function form(Form $form): Form
     {

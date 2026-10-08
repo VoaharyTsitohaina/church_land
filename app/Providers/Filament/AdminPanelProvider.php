@@ -57,6 +57,8 @@ class AdminPanelProvider extends PanelProvider
             ->plugins([
                 FilamentShieldPlugin::make(),
                 ActivitylogPlugin::make()
+                    ->label('Journal d\'activité')
+                    ->pluralLabel('Journal d\'activité')
                     ->translateLogKey(fn (string $key) => match ($key) {
                         'type' => 'Type',
                         'church' => 'Église',
@@ -72,6 +74,7 @@ class AdminPanelProvider extends PanelProvider
                         'current_use' => 'Utilisation actuelle',
                         'observations' => 'Observations',
                         'history' => 'Historique',
+                        'created_by' => 'Créé par',
                         default => $key,
                     })
                     ->translateSubject(fn (string $subject) => match ($subject) {

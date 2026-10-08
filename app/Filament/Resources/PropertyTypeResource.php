@@ -16,8 +16,10 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class PropertyTypeResource extends Resource
 {
     protected static ?string $model = PropertyType::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $modelLabel = 'Type de bien';
+    protected static ?string $pluralModelLabel = 'Types de biens';
+    protected static ?string $navigationLabel = 'Types de biens';
 
     public static function form(Form $form): Form
     {

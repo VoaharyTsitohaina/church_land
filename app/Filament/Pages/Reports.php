@@ -18,7 +18,9 @@ class Reports extends Page
 {
     use HasPageShield, ScopesPropertiesByUser;
 
-    protected static ?string $navigationLabel = 'Reports';
+    protected static ?string $modelLabel = 'Rapport';
+    protected static ?string $pluralModelLabel = 'Rapports';
+    protected static ?string $navigationLabel = 'Rapports';
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static string $view = 'filament.pages.reports';
     protected static ?string $title = 'Reports';
