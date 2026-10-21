@@ -25,6 +25,7 @@ class ChurchResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
+                    ->label('Nom')
                     ->required()
                     ->maxLength(255),
                 Forms\Components\Select::make('district_id')

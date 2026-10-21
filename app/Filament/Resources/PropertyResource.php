@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PropertyResource\Pages;
-use App\Filament\Resources\PropertyResource\RelationManagers;
 use App\Models\Property;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -12,11 +11,9 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Illuminate\Support\Facades\Auth;
 use Dotswan\MapPicker\Fields\Map;
-use App\Exports\ArrayExport;
 use Filament\Infolists\Infolist;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\SpatieMediaLibraryImageEntry;
@@ -27,6 +24,11 @@ use Dotswan\MapPicker\Infolists\MapEntry;
 use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\Section as FormsSection;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\DatePicker;
 
 class PropertyResource extends Resource
 {
@@ -40,130 +42,83 @@ class PropertyResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('reference')
-                    ->label('Référence')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('name')
-                    ->label('Nom du bien')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\Select::make('property_type_id')
-                    ->label('Type de bien')
-                    ->relationship('type', 'name')
-                    ->searchable()
-                    ->preload()
-                    ->required(),
-                Forms\Components\Select::make('church_id')
-                    ->label('Église')
-                    ->relationship('church', 'name')
-                    ->searchable()
-                    ->preload()
-                    ->required(),
-                Forms\Components\TextInput::make('region')
-                    ->label('Région')
-                    ->maxLength(255)
-                    ->default(null),
-                Forms\Components\TextInput::make('admin_district')
-                    ->label('District administratif')
-                    ->maxLength(255)
-                    ->default(null),
-                Forms\Components\TextInput::make('commune')
-                    ->label('Commune')
-                    ->maxLength(255)
-                    ->default(null),
-                Forms\Components\TextInput::make('fokontany')
-                    ->label('Fokontany')
-                    ->maxLength(255)
-                    ->default(null),
-                Forms\Components\TextInput::make('address')
-                    ->label('Adresse')
-                    ->maxLength(255)
-                    ->default(null),
-                Forms\Components\TextInput::make('latitude')
-                    ->label('Latitude')
-                    ->numeric()
-                    ->default(null),
-                Forms\Components\TextInput::make('longitude')
-                    ->label('Longitude')
-                    ->numeric()
-                    ->default(null),
-                Forms\Components\TextInput::make('area')
-                    ->label('Superficie')
-                    ->numeric()
-                    ->default(null),
-                Forms\Components\TextInput::make('land_title_number')
-                    ->label('Numéro de titre foncier')
-                    ->maxLength(255)
-                    ->default(null),
-                Forms\Components\TextInput::make('cadastral_number')
-                    ->label('Numéro cadastral')
-                    ->maxLength(255)
-                    ->default(null),
-                Forms\Components\TextInput::make('legal_status')
-                    ->label('Statut juridique')
-                    ->maxLength(255)
-                    ->default(null),
-                Forms\Components\TextInput::make('acquisition_mode')
-                    ->label("Mode d'acquisition")
-                    ->maxLength(255)
-                    ->default(null),
-                Forms\Components\DatePicker::make('acquisition_date'),
-                Forms\Components\TextInput::make('estimated_value')
-                    ->label('Valeur estimée')
-                    ->numeric()
-                    ->default(null),
-                Forms\Components\TextInput::make('current_use')
-                    ->label('Utilisation actuelle')
-                    ->maxLength(255)
-                    ->default(null),
-                Forms\Components\Textarea::make('observations')
-                    ->label('Observations')
-                    ->columnSpanFull(),
-                Forms\Components\Textarea::make('history')
-                    ->label('Historique')
-                    ->columnSpanFull(),
-                Forms\Components\TextInput::make('created_by')
+                FormsSection::make('Identification')
+                    ->schema([
+                        TextInput::make('reference')
+                            ->label('Référence')->required()->maxLength(255),
+                        TextInput::make('name')
+                            ->label('Nom du bien')->required()->maxLength(255),
+                        Select::make('property_type_id')
+                            ->label('Type de bien')
+                            ->relationship('type', 'name')
+                            ->searchable()->preload()->required(),
+                        Select::make('church_id')
+                            ->label('Église')
+                            ->relationship('church', 'name')
+                            ->searchable()->preload()->required(),
+                    ])->columns(2),
+                    
+                FormsSection::make('Localisation')
+                    ->schema([
+                        TextInput::make('region')->label('Région')->maxLength(255),
+                        TextInput::make('admin_district')->label('District administratif')->maxLength(255),
+                        TextInput::make('commune')->label('Commune')->maxLength(255),
+                        TextInput::make('fokontany')->label('Fokontany')->maxLength(255),
+                        TextInput::make('address')->label('Adresse')->maxLength(255)->columnSpanFull(),
+                        TextInput::make('latitude')->label('Latitude')->numeric(),
+                        TextInput::make('longitude')->label('Longitude')->numeric(),
+                        Map::make('location')
+                            ->label('Position sur la carte')
+                            ->columnSpanFull()
+                            ->defaultLocation(latitude: -18.8792, longitude: 47.5079)
+                            ->showMarker(true)
+                            ->clickable(true)
+                            ->zoom(16)
+                            ->afterStateUpdated(function (callable $set, $state) {
+                                $set('latitude', $state['lat']);
+                                $set('longitude', $state['lng']);
+                            })
+                            ->afterStateHydrated(function ($state, $record, Set $set): void {
+                                if ($record && $record->latitude && $record->longitude) {
+                                    $set('location', ['lat' => $record->latitude, 'lng' => $record->longitude]);
+                                }
+                            })
+                            ->live(),
+                    ])->columns(2),
+
+                FormsSection::make('Informations foncières')
+                    ->schema([
+                        TextInput::make('area')->label('Superficie (m²)')->numeric(),
+                        TextInput::make('land_title_number')->label('Numéro de titre foncier')->maxLength(255),
+                        TextInput::make('cadastral_number')->label('Numéro cadastral')->maxLength(255),
+                        TextInput::make('legal_status')->label('Statut juridique')->maxLength(255),
+                        TextInput::make('acquisition_mode')->label("Mode d'acquisition")->maxLength(255),
+                        DatePicker::make('acquisition_date')->label("Date d'acquisition"),
+                        TextInput::make('estimated_value')->label('Valeur estimée (Ar)')->numeric(),
+                    ])->columns(2),
+
+                FormsSection::make('Description')
+                    ->schema([
+                        TextInput::make('current_use')->label('Utilisation actuelle')->maxLength(255)->columnSpanFull(),
+                        Textarea::make('observations')->label('Observations')->columnSpanFull(),
+                        Textarea::make('history')->label('Historique')->columnSpanFull(),
+                    ]),
+
+                FormsSection::make('Documents')
+                    ->schema([
+                        SpatieMediaLibraryFileUpload::make('titre_foncier')->label('Titre foncier')->collection('titre_foncier')->openable(),
+                        SpatieMediaLibraryFileUpload::make('plan')->label('Plan')->collection('plan')->openable(),
+                        SpatieMediaLibraryFileUpload::make('acte')->label('Acte')->collection('acte')->openable(),
+                        SpatieMediaLibraryFileUpload::make('autres')->label('Autres documents')->collection('autres')->openable()->multiple(),
+                        SpatieMediaLibraryFileUpload::make('photos')->label('Photos')->collection('photos')
+                            ->multiple()->panelLayout('grid')->openable()->responsiveImages()->image()->columnSpanFull(),
+                    ])->columns(2),
+
+                TextInput::make('created_by')
                     ->label('Créé par')
                     ->default(fn () => Auth::user()->name)
                     ->disabled()
                     ->dehydrated(false),
-                SpatieMediaLibraryFileUpload::make('titre_foncier')
-                    ->collection('titre_foncier')
-                    ->openable(true),
-                SpatieMediaLibraryFileUpload::make('plan')
-                    ->openable(true)
-                    ->collection('plan'),
-                SpatieMediaLibraryFileUpload::make('acte')
-                    ->collection('acte')
-                    ->openable(true),
-                SpatieMediaLibraryFileUpload::make('photos')
-                    ->collection('photos')
-                    ->multiple()
-                    ->panelLayout('grid')
-                    ->openable(true)
-                    ->responsiveImages()
-                    ->image(),
-                SpatieMediaLibraryFileUpload::make('autres')
-                    ->collection('autres')
-                    ->openable(true)
-                    ->multiple(),
-                Map::make('location')
-                    ->label('Location')
-                    ->defaultLocation(latitude: -18.8792, longitude: 47.5079)
-                    ->showMarker(true)
-                    ->clickable(true)
-                    ->zoom(16)
-                    ->afterStateUpdated(function (callable $set, $state) {
-                        $set('latitude', $state['lat']);
-                        $set('longitude', $state['lng']);
-                    })
-                    ->afterStateHydrated(function ($state, $record, Set $set): void {
-                        if ($record && $record->latitude && $record->longitude) {
-                            $set('location', ['lat' => $record->latitude, 'lng' => $record->longitude]);
-                        }
-                    })
-                    ->live(),
             ]);
     }
 
