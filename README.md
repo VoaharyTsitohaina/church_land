@@ -1,59 +1,89 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+1. Prérequis sur l’autre PC
+PHP 8.2 ou plus, avec les extensions mbstring, xml, curl, zip, gd, intl, fileinfo et pdo_mysql
+Composer
+MySQL (Laragon ou XAMPP font tout d’un coup sous Windows)
+Node.js seulement si tu as un thème personnalisé (->viteTheme())
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Vérifie avec php -v, composer -V et mysql --version.
 
-## About Laravel
+2. Installer le projet
+bash
+cd chemin/vers/le/projet
+composer install
+copy .env.example .env        # Windows (cp sur Linux/Mac)
+php artisan key:generate
+3. Configurer .env
+env
+APP_LOCALE=fr
+APP_FALLBACK_LOCALE=fr
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=church_land
+DB_USERNAME=root
+DB_PASSWORD=
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Crée d’abord une base vide du même nom (church_land) dans phpMyAdmin ou en ligne de commande.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+4. Créer les tables et le lien des fichiers
+bash
+php artisan migrate
+php artisan storage:link
 
-## Learning Laravel
+Sans storage:link, les photos et documents ne s’affichent pas.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+5. Assets (seulement si tu as un thème Filament personnalisé)
+bash
+npm install
+npm run build
+6. Créer le compte administrateur
+bash
+php artisan make:filament-user
+php artisan shield:generate --all
+php artisan shield:super-admin --user=1
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Sans la dernière commande, le compte n’a aucun rôle et les menus restent vides.
 
-## Laravel Sponsors
+7. Lancer
+bash
+php artisan optimize:clear
+php artisan serve
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Ouvre http://127.0.0.1:8000, qui redirige vers /admin.
 
-### Premium Partners
+8. Recréer les rôles
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+La base est vide, donc les rôles n’existent plus. Va dans Rôles et crée-les avec exactement ces noms, car le code les utilise tels quels :
 
-## Contributing
+district_manager
+federation_admin
+data_entry
+consultant
+report_manager
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Coche leurs permissions, puis crée un compte de test par rôle. Pour district_manager et federation_admin, renseigne la fédération ou le district.
 
-## Code of Conduct
+Récupérer tes données de l’autre PC (optionnel)
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Sur l’ancien PC :
 
-## Security Vulnerabilities
+bash
+mysqldump -u root church_land > sauvegarde.sql
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Sur le nouveau PC :
 
-## License
+bash
+mysql -u root church_land < sauvegarde.sql
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Copie aussi le dossier storage/app/public pour récupérer les photos et documents. Dans ce cas, tu sautes l’étape 8, puisque les rôles sont déjà dans la base.
+
+Erreurs fréquentes
+Erreur	Solution
+No application encryption key	php artisan key:generate
+Class ... not found	composer dump-autoload
+Table permissions introuvable	php artisan migrate
+Menus vides	php artisan shield:super-admin --user=1
+Photos invisibles	php artisan storage:link
+Interface sans style	npm install && npm run build
+Comportement bizarre après un pull	php artisan optimize:clear
