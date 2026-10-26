@@ -15,7 +15,11 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
+use Spatie\Permission\Models\Role;
 
 class UserResource extends Resource
 {
@@ -24,6 +28,8 @@ class UserResource extends Resource
     protected static ?string $modelLabel = 'Utilisateur';
     protected static ?string $pluralModelLabel = 'Utilisateurs';
     protected static ?string $navigationLabel = 'Utilisateurs';
+
+    protected const ROLES_INTERDITS_FEDERATION_ADMIN = ['admin', 'super_admin', 'federation_admin'];
 
     public static function form(Form $form): Form
     {
@@ -60,18 +66,37 @@ class UserResource extends Resource
                         Forms\Components\Select::make('roles')
                             ->label('Rôle')
                             ->relationship('roles', 'name')
+                            ->options(fn () => static::assignableRoles())
+                            ->rules(fn () => [Rule::in(static::assignableRoles()->keys()->all())])
                             ->preload()
                             ->searchable()
                             ->required()
-                            ->live(),
+                            ->live()
+                            ->afterStateHydrated(function ($component, $record) {
+                                $component->state($record?->roles?->first()?->id);
+                            }),
                         Forms\Components\Select::make('federation_id')
                             ->label('Fédération')
                             ->relationship('federation', 'name')
                             ->preload()
                             ->searchable()
-                            ->live()
+                            ->required(fn (Get $get) => static::roleNeedsScope($get('roles')[0] ?? null))
                             ->visible(fn (Get $get) => static::roleNeedsScope($get('roles')[0] ?? null))
-                            ->default(null),
+                            ->default(function () {
+                                /** @var User $user */
+                                $user = Auth::user();
+
+                                return $user->hasRole('federation_admin') ? (string) $user->federation_id : null;
+                            })
+                            ->disabled(function () {
+                                /** @var User $user */
+                                $user = Auth::user();
+
+                                return $user->hasRole('federation_admin')
+                                    && ! $user->hasRole(['admin', 'super_admin']);
+                            })
+                            ->live()
+                            ->dehydrated(),
                         Forms\Components\Select::make('district_id')
                             ->label('District')
                             ->relationship(
@@ -84,6 +109,7 @@ class UserResource extends Resource
                             )
                             ->preload()
                             ->searchable()
+                            ->required(fn (Get $get) => static::roleNeedsScope($get('roles')[0] ?? null, onlyDistrict: true))
                             ->live()
                             ->afterStateUpdated(function ($state, Forms\Set $set): void {
                                 $set('federation_id', District::find($state)?->federation_id);
@@ -114,6 +140,20 @@ class UserResource extends Resource
         return in_array($roleName, ['district_manager', 'federation_admin']);
     }
 
+    public static function assignableRoles(): Collection
+        {
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+            $query = Role::query();
+
+            // L'administrateur garde tous les rôles ; l'administrateur de fédération est limité
+            if (! $user->hasRole(['admin', 'super_admin']) && $user->hasRole('federation_admin')) {
+                $query->whereNotIn('name', self::ROLES_INTERDITS_FEDERATION_ADMIN);
+            }
+
+            return $query->pluck('name', 'id');
+        }
+
     public static function table(Table $table): Table
     {
         return $table
@@ -133,11 +173,13 @@ class UserResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('federation_id')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('federation.name')
+                    ->label('Fédération')
+                    ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('district_id')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('district.name')
+                    ->label('District')
+                    ->searchable()
                     ->sortable(),
             ])
             ->filters([
@@ -152,6 +194,21 @@ class UserResource extends Resource
                 ]),
             ]);
     }
+
+    public static function getEloquentQuery(): Builder
+        {
+            $query = parent::getEloquentQuery();
+
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+
+            if (! $user->hasRole(['admin', 'super_admin']) && $user->hasRole('federation_admin')) {
+                $query->where('federation_id', $user->federation_id)
+                    ->whereDoesntHave('roles', fn ($q) => $q->whereIn('name', self::ROLES_INTERDITS_FEDERATION_ADMIN));
+            }
+
+            return $query;
+        }
 
     public static function getRelations(): array
     {

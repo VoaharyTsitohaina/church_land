@@ -25,6 +25,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'federation_id',
+        'district_id',
     ];
 
     public function federation() { return $this->belongsTo(Federation::class); }
