@@ -141,18 +141,18 @@ class UserResource extends Resource
     }
 
     public static function assignableRoles(): Collection
-        {
-            /** @var \App\Models\User $user */
-            $user = Auth::user();
-            $query = Role::query();
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $query = Role::query();
 
-            // L'administrateur garde tous les rôles ; l'administrateur de fédération est limité
-            if (! $user->hasRole(['admin', 'super_admin']) && $user->hasRole('federation_admin')) {
-                $query->whereNotIn('name', self::ROLES_INTERDITS_FEDERATION_ADMIN);
-            }
-
-            return $query->pluck('name', 'id');
+        // L'administrateur garde tous les rôles ; l'administrateur de fédération est limité
+        if (! $user->hasRole(['admin', 'super_admin']) && $user->hasRole('federation_admin')) {
+            $query->whereNotIn('name', self::ROLES_INTERDITS_FEDERATION_ADMIN);
         }
+
+        return $query->pluck('name', 'id');
+    }
 
     public static function table(Table $table): Table
     {
