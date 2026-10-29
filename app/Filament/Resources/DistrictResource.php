@@ -9,6 +9,8 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use App\Support\Perimeter;
 
 class DistrictResource extends Resource
 {
@@ -26,7 +28,7 @@ class DistrictResource extends Resource
                     ->maxLength(255),
                 Forms\Components\Select::make('federation_id')
                     ->label('Federation')
-                    ->relationship('federation', 'name')
+                    ->relationship('federation', 'name', modifyQueryUsing: fn (Builder $query) => Perimeter::federations($query))
                     ->searchable()
                     ->preload()
                     ->required(),
@@ -83,5 +85,10 @@ class DistrictResource extends Resource
             'create' => Pages\CreateDistrict::route('/create'),
             'edit' => Pages\EditDistrict::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return Perimeter::districts(parent::getEloquentQuery());
     }
 }

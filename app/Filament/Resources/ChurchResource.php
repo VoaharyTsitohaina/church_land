@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ChurchResource\Pages;
+use App\Support\Perimeter;
 use App\Models\Church;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -30,7 +31,7 @@ class ChurchResource extends Resource
                     ->maxLength(255),
                 Forms\Components\Select::make('district_id')
                     ->label('District')
-                    ->relationship('district', 'name')
+                    ->relationship('district', 'name', modifyQueryUsing: fn (Builder $query) => Perimeter::districts($query))
                     ->searchable()
                     ->preload()
                     ->required(),
@@ -91,20 +92,7 @@ class ChurchResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        $query = parent::getEloquentQuery();
-        
-        $user = Auth::user();
-        /** @var \App\Models\User $user */
-        
-        if ($user->hasRole('district_manager')) {
-            $query->where('district_id', $user->district_id);
-        } elseif ($user->hasRole('federation_admin')) {
-            $query->whereHas('district', function (Builder $q) use ($user) {
-                $q->where('federation_id', $user->federation_id);
-            });
-        }
-
-        return $query;
+            return Perimeter::churches(parent::getEloquentQuery());
     }
     
 }

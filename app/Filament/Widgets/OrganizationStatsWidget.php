@@ -11,6 +11,7 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
+use App\Support\Perimeter;
 
 class OrganizationStatsWidget extends BaseWidget
 {
@@ -51,15 +52,7 @@ class OrganizationStatsWidget extends BaseWidget
 
     protected function federationsQuery(): Builder
     {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-        $query = Federation::query();
-
-        if ($user->hasRole('district_manager')) {
-            $query->whereHas('districts', fn ($q) => $q->where('id', $user->district_id));
-        } elseif ($user->hasRole('federation_admin')) {
-            $query->where('id', $user->federation_id);
-        }
+        $query = Perimeter::federations(Federation::query());
 
         if ($id = $this->effectiveFilterIds()['federation_id']) {
             $query->where('id', $id);
@@ -70,16 +63,7 @@ class OrganizationStatsWidget extends BaseWidget
 
     protected function districtsQuery(): Builder
     {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-        $query = District::query();
-
-        if ($user->hasRole('district_manager')) {
-            $query->where('id', $user->district_id);
-        } elseif ($user->hasRole('federation_admin')) {
-            $query->where('federation_id', $user->federation_id);
-        }
-
+        $query = Perimeter::districts(District::query());
         $filters = $this->effectiveFilterIds();
 
         if ($filters['district_id']) {
@@ -93,22 +77,15 @@ class OrganizationStatsWidget extends BaseWidget
 
     protected function churchesQuery(): Builder
     {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-        $query = Church::query();
+        $query = Perimeter::churches(Church::query());
+        $filters = $this->effectiveFilterIds();
 
-        if ($user->hasRole('district_manager')) {
-            $query->where('district_id', $user->district_id);
-        } elseif ($user->hasRole('federation_admin')) {
-            $query->whereHas('district', fn ($q) => $q->where('federation_id', $user->federation_id));
-        }
-
-        if ($churchId = session('dashboard_filter.church_id')) {
-            $query->where('id', $churchId);
-        } elseif ($districtId = session('dashboard_filter.district_id')) {
-            $query->where('district_id', $districtId);
-        } elseif ($federationId = session('dashboard_filter.federation_id')) {
-            $query->whereHas('district', fn ($q) => $q->where('federation_id', $federationId));
+        if ($filters['church_id']) {
+            $query->where('id', $filters['church_id']);
+        } elseif ($filters['district_id']) {
+            $query->where('district_id', $filters['district_id']);
+        } elseif ($filters['federation_id']) {
+            $query->whereHas('district', fn ($q) => $q->where('federation_id', $filters['federation_id']));
         }
 
         return $query;
@@ -116,27 +93,19 @@ class OrganizationStatsWidget extends BaseWidget
 
     protected function propertiesQuery(): Builder
     {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-        $query = Property::query();
+        $query = Perimeter::properties(Property::query());
+        $filters = $this->effectiveFilterIds();
 
-        if ($user->hasRole('district_manager')) {
-            $query->whereHas('church', fn ($q) => $q->where('district_id', $user->district_id));
-        } elseif ($user->hasRole('federation_admin')) {
-            $query->whereHas('church.district', fn ($q) => $q->where('federation_id', $user->federation_id));
-        }
-
-        if ($churchId = session('dashboard_filter.church_id')) {
-            $query->where('church_id', $churchId);
-        } elseif ($districtId = session('dashboard_filter.district_id')) {
-            $query->whereHas('church', fn ($q) => $q->where('district_id', $districtId));
-        } elseif ($federationId = session('dashboard_filter.federation_id')) {
-            $query->whereHas('church.district', fn ($q) => $q->where('federation_id', $federationId));
+        if ($filters['church_id']) {
+            $query->where('church_id', $filters['church_id']);
+        } elseif ($filters['district_id']) {
+            $query->whereHas('church', fn ($q) => $q->where('district_id', $filters['district_id']));
+        } elseif ($filters['federation_id']) {
+            $query->whereHas('church.district', fn ($q) => $q->where('federation_id', $filters['federation_id']));
         }
 
         return $query;
     }
-
     protected function getStats(): array
     {
         return [

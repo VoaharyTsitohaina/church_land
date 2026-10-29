@@ -13,6 +13,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Livewire\Attributes\On;
 use App\Filament\Concerns\ScopesPropertiesByUser;
+use App\Support\Perimeter;
 
 class Reports extends Page
 {
@@ -30,37 +31,15 @@ class Reports extends Page
     {
         // vide : force Livewire à relire la session au re-render
     }
-
-    protected function userScope(Builder $query): Builder
-    {
-        $user = Auth::user();
-        /** @var \App\Models\User $user */
-
-        if ($user->hasRole('district_manager')) {
-            $query->whereHas('church', fn ($q) => $q->where('district_id', $user->district_id));
-        } elseif ($user->hasRole('federation_admin')) {
-            $query->whereHas('church.district', fn ($q) => $q->where('federation_id', $user->federation_id));
-        }
-
-        return $query;
-    }
     
     protected function baseQuery(): Builder
     {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-        $query = Property::query();
- 
-        if ($user->hasRole('district_manager')) {
-            $query->whereHas('church', fn ($q) => $q->where('district_id', $user->district_id));
-        } elseif ($user->hasRole('federation_admin')) {
-            $query->whereHas('church.district', fn ($q) => $q->where('federation_id', $user->federation_id));
-        }
- 
+        $query = Perimeter::properties(Property::query());
+
         $churchId = session('reports_filter.church_id');
         $districtId = session('reports_filter.district_id');
         $federationId = session('reports_filter.federation_id');
- 
+
         if ($churchId) {
             $query->where('church_id', $churchId);
         } elseif ($districtId) {
@@ -68,7 +47,7 @@ class Reports extends Page
         } elseif ($federationId) {
             $query->whereHas('church.district', fn ($q) => $q->where('federation_id', $federationId));
         }
- 
+
         return $query;
     }
 

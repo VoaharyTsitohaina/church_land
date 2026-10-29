@@ -28,10 +28,7 @@ class DashboardFilterWidget extends Widget implements HasForms
     // Seul un utilisateur sans périmètre fixé par son rôle peut filtrer manuellement
     public static function canView(): bool
     {
-        /** @var User|null $user */
-        $user = Auth::user();
-
-        return ! $user->hasAnyRole(['district_manager','federation_admin']);
+        return \App\Support\Perimeter::type() === 'all';
     }
 
     public function mount(): void

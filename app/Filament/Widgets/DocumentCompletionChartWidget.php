@@ -9,6 +9,7 @@ use Filament\Support\RawJs;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
+use App\Support\Perimeter;
 
 class DocumentCompletionChartWidget extends ChartWidget
 {
@@ -32,53 +33,18 @@ class DocumentCompletionChartWidget extends ChartWidget
      */
     protected function scopedProperties(): Builder
     {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
+        $query = Perimeter::properties(Property::query());
 
-        $query = Property::query();
-
-        /*
-         * Scope selon le rôle
-         */
-        if ($user->hasRole('district_manager')) {
-
-            $query->whereHas(
-                'church',
-                fn ($q) => $q->where('district_id', $user->district_id)
-            );
-
-        } elseif ($user->hasRole('federation_admin')) {
-
-            $query->whereHas(
-                'church.district',
-                fn ($q) => $q->where('federation_id', $user->federation_id)
-            );
-        }
-
-        /*
-         * Filtres du dashboard
-         */
         $churchId = session('dashboard_filter.church_id');
         $districtId = session('dashboard_filter.district_id');
         $federationId = session('dashboard_filter.federation_id');
 
         if ($churchId) {
-
             $query->where('church_id', $churchId);
-
         } elseif ($districtId) {
-
-            $query->whereHas(
-                'church',
-                fn ($q) => $q->where('district_id', $districtId)
-            );
-
+            $query->whereHas('church', fn ($q) => $q->where('district_id', $districtId));
         } elseif ($federationId) {
-
-            $query->whereHas(
-                'church.district',
-                fn ($q) => $q->where('federation_id', $federationId)
-            );
+            $query->whereHas('church.district', fn ($q) => $q->where('federation_id', $federationId));
         }
 
         return $query;

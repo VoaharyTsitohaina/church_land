@@ -12,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Support\Perimeter;
 
 class FederationResource extends Resource
 {
@@ -68,6 +69,10 @@ class FederationResource extends Resource
         ];
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        return Perimeter::federations(parent::getEloquentQuery());
+    }
     public static function getPages(): array
     {
         return [

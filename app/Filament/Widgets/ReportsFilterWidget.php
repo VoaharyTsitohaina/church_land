@@ -11,6 +11,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Facades\Auth;
+use App\Support\Perimeter;
 
 class ReportsFilterWidget extends Widget implements HasForms
 {
@@ -26,13 +27,11 @@ class ReportsFilterWidget extends Widget implements HasForms
 
     public function mount(): void
     {
-        /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        // Pré-remplit selon le périmètre fixe du rôle (comme avant dans Reports.php)
-        if ($user->hasRole('district_manager')) {
+        if (Perimeter::type($user) === 'district') {
             $this->district_id = $user->district_id;
-        } elseif ($user->hasRole('federation_admin')) {
+        } elseif (Perimeter::type($user) === 'federation') {
             $this->federation_id = $user->federation_id;
         }
 
@@ -47,13 +46,10 @@ class ReportsFilterWidget extends Widget implements HasForms
 
     public function form(Form $form): Form
     {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-
         return $form->schema([
             Select::make('federation_id')
                 ->label('Fédération/Mission')
-                ->options(Federation::pluck('name', 'id'))
+                ->options(fn () => Perimeter::federations(Federation::query())->pluck('name', 'id'))
                 ->placeholder('Toutes')
                 ->searchable()
                 ->preload()
@@ -65,13 +61,15 @@ class ReportsFilterWidget extends Widget implements HasForms
                     $this->church_id = null;
                     $this->persistFilter();
                 })
-                ->visible(fn () => !$user->hasRole(['district_manager', 'federation_admin'])),
+                ->visible(fn () => Perimeter::type() === 'all'),
 
             Select::make('district_id')
                 ->label('District')
-                ->options(fn ($get) => District::when(
-                    $get('federation_id'),
-                    fn ($q) => $q->where('federation_id', $get('federation_id'))
+                ->options(fn ($get) => Perimeter::districts(
+                    District::query()->when(
+                        $get('federation_id'),
+                        fn ($q) => $q->where('federation_id', $get('federation_id'))
+                    )
                 )->pluck('name', 'id'))
                 ->placeholder('Tous')
                 ->searchable()
@@ -82,25 +80,18 @@ class ReportsFilterWidget extends Widget implements HasForms
                     $this->church_id = null;
                     $this->persistFilter();
                 })
-                ->visible(fn () => !$user->hasRole('district_manager')),
+                ->visible(fn () => Perimeter::type() !== 'district'),
 
             Select::make('church_id')
                 ->label('Église')
-                ->options(function ($get) {
-    $districtId = $get('district_id');
-    $federationId = $get('federation_id');
-
-    return Church::query()
-        ->when(
-            $districtId,
-            fn ($q) => $q->where('district_id', $districtId)
-        )
-        ->when(
-            !$districtId && $federationId,
-            fn ($q) => $q->whereHas('district', fn ($q2) => $q2->where('federation_id', $federationId))
-        )
-        ->pluck('name', 'id');
-})
+                ->options(fn ($get) => Perimeter::churches(
+                    Church::query()
+                        ->when($get('district_id'), fn ($q) => $q->where('district_id', $get('district_id')))
+                        ->when(
+                            ! $get('district_id') && $get('federation_id'),
+                            fn ($q) => $q->whereHas('district', fn ($d) => $d->where('federation_id', $get('federation_id')))
+                        )
+                )->pluck('name', 'id'))
                 ->placeholder('Toutes')
                 ->searchable()
                 ->preload()
@@ -123,22 +114,18 @@ class ReportsFilterWidget extends Widget implements HasForms
 
     public function resetFilter(): void
     {
-        /** @var \App\Models\User $user */
         $user = Auth::user();
+        $type = Perimeter::type($user);
 
-        if (!$user->hasRole(['district_manager', 'federation_admin'])) {
-            $this->federation_id = null;
-            $this->district_id = null;
-            $this->church_id = null;
-            $this->form->fill();
-        } elseif (!$user->hasRole('district_manager')) {
-            $this->district_id = null;
-            $this->church_id = null;
-            $this->form->fill(['federation_id' => $this->federation_id]);
-        } else {
-            $this->church_id = null;
-            $this->form->fill(['district_id' => $this->district_id]);
-        }
+        $this->federation_id = $type === 'federation' ? $user->federation_id : null;
+        $this->district_id = $type === 'district' ? $user->district_id : null;
+        $this->church_id = null;
+
+        $this->form->fill([
+            'federation_id' => $this->federation_id,
+            'district_id' => $this->district_id,
+            'church_id' => null,
+        ]);
 
         $this->persistFilter();
     }

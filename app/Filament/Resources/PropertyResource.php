@@ -29,6 +29,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\DatePicker;
+use App\Support\Perimeter;
 
 class PropertyResource extends Resource
 {
@@ -47,14 +48,14 @@ class PropertyResource extends Resource
                         TextInput::make('reference')
                             ->label('Référence')->required()->maxLength(255),
                         TextInput::make('name')
-                            ->label('Nom du bien')->required()->maxLength(255),
+                            ->label('Nom du bien')->required()->searchable()->maxLength(255),
                         Select::make('property_type_id')
                             ->label('Type de bien')
                             ->relationship('type', 'name')
                             ->searchable()->preload()->required(),
                         Select::make('church_id')
                             ->label('Église')
-                            ->relationship('church', 'name')
+                            ->relationship('church', 'name', modifyQueryUsing: fn (Builder $query) => Perimeter::churches($query))
                             ->searchable()->preload()->required(),
                     ])->columns(2),
                     
@@ -368,7 +369,7 @@ class PropertyResource extends Resource
             ->filters([
                 SelectFilter::make('church_id')
                     ->label('Église')
-                    ->relationship('church', 'name'),
+                    ->relationship('church', 'name', modifyQueryUsing: fn (Builder $query) => Perimeter::churches($query)),
                 SelectFilter::make('property_type_id')
                     ->label('Type')
                     ->relationship('type', 'name'),
@@ -467,18 +468,8 @@ class PropertyResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        $query = parent::getEloquentQuery();
-        
-        $user = Auth::user();
-        /** @var \App\Models\User $user */
-        
-        if ($user->hasRole('district_manager')) {
-            $query->whereHas('church', fn ($q) => $q->where('district_id', $user->district_id));
-        } elseif ($user->hasRole('federation_admin')) {
-            $query->whereHas('church.district', fn ($q) => $q->where('federation_id', $user->federation_id));
-        }
+        return Perimeter::properties(parent::getEloquentQuery());
 
-        return $query;
     }
 
 }
