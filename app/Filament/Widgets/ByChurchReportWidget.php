@@ -65,7 +65,7 @@ class ByChurchReportWidget extends BaseWidget
                     ->icon('heroicon-o-arrow-down-tray')
                     ->action(fn () => Excel::download(
                         new PropertiesExport($this->detailedQuery()),
-                        'patrimoine-par-eglise-detaille.xlsx'
+                        'patrimoine-par-eglise.xlsx'
                     )),
 
                 Action::make('exportPdf')
@@ -74,7 +74,7 @@ class ByChurchReportWidget extends BaseWidget
                     ->action(fn () => $this->downloadPropertiesPdf(
                         $this->detailedQuery(),
                         'Patrimoine par Eglise',
-                        'patrimoine-par-eglise-detaille.pdf'
+                        'patrimoine-par-eglise.pdf'
                     ))
             ]);
     }
