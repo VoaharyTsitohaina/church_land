@@ -48,7 +48,7 @@ class PropertyResource extends Resource
                         TextInput::make('reference')
                             ->label('Référence')->required()->maxLength(255),
                         TextInput::make('name')
-                            ->label('Nom du bien')->required()->searchable()->maxLength(255),
+                            ->label('Nom du bien')->required()->maxLength(255),
                         Select::make('property_type_id')
                             ->label('Type de bien')
                             ->relationship('type', 'name')
